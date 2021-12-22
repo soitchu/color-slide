@@ -1,0 +1,10 @@
+{
+    "webSocketDomain" : "localhost",
+    "webSocketPort" : 3005,
+    "protocol" : "http",
+    "key": "",
+    "cert": "",
+    "ca" : "",
+    "cors" : "*"
+
+}
