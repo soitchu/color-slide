@@ -63,7 +63,7 @@
     var localHistoryTimeout = [];
     var globalHistory = [];
     var currentMoveCount = 0;
-    var socket = io("http://localhost:3005");
+    var socket = io(config.webSocketUrl);
     var room_n;
 
     function askToJoin() {
