@@ -163,13 +163,12 @@
     });
     socket.on('again',function(data){
         shouldISendData = false;
-        document.querySelector("#playAgain").style.display = "block";
 
         if(parseInt(data) == 1){
-            document.querySelector("#messageDiv").innerText = `You won!`;
+            document.querySelector("#messageDiv").innerText = `You won! Press ready again to play again.`;
 
         }else{
-            document.querySelector("#messageDiv").innerText = `You lost :(`;
+            document.querySelector("#messageDiv").innerText = `You lost :( Press ready again to play again.`;
 
         }
     });

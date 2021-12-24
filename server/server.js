@@ -160,9 +160,7 @@ class gameClass {
                 }
             }
         }
-
         return 1;
-
     }
     initialise() {
 
@@ -219,9 +217,40 @@ function getRandomRoomName() {
     }
 }
 
+function cloneArray(array,dimensions){
+    let clonedArray = [];
+    if(dimensions == 1){
+        for(var i = 0; i < array.length; i++){
+            clonedArray.push(array[i]);
+        }
+    }else if(dimensions == 2){
+        for(var i = 0; i < array.length; i++){
+            let temp = [];
+            for(var j = 0; j < array[i].length; j++){
+                temp.push(array[i][j]);
+            }
+            clonedArray.push(temp);
+        }        
+    }
+
+    return clonedArray;
+}
+
+function compareArray(array1, array2, dimen1, dimen2){
+    for(var i = 0; i < dimen1; i++){
+        for(var j = 0; j < dimen2; j++){
+            if(array1[i][j] != array2[i][j]){
+                return -1;
+            }
+        }
+    }
+
+    return 1;
+}
+
 function onConnection(socket) {
     var room_name;
-    var x;
+    var thisRoom;
 
     // Making the user leave the rooms its already in
     let roomsAll = Array.from(socket.rooms);    
@@ -230,79 +259,75 @@ function onConnection(socket) {
         socket.leave(roomsAll[i]);
     }
 
+    function checkIfCanRun(){
+        if(thisRoom == null || thisRoom == undefined){
+            return true;
+        }
+        return false;
+    }
+
 
     function joinRoom(data){
-        try{
-            if(io.sockets.adapter.rooms.get(data).size>=2){
-                socket.emit("message","There are already more than 2 people in this room.");
-                return;
-            }
-        }catch(err){
-
-        }
 
         try{
-            if (typeof data_m[data] !== "undefined" && data_m[data].inProgress==true) {
+            let roomSize = io.sockets.adapter.rooms.get(data);
+                if(roomSize != undefined && roomSize != null && roomSize.size>=2){
+                    socket.emit("message","There are already more than 2 people in this room.");
+                    return;
+                }
+
+
+            if (typeof thisRoom !== "undefined" && thisRoom.inProgress== true) {
                 socket.emit("message","A game is already in progress in this room");
                 return;
             }
+
+
+
+            if (data.length == 6) {
+                let roomsAll = Array.from(socket.rooms);
+                for (var i = 0; i < roomsAll.length; i++) {
+                    if (roomsAll[i] == socket.id) { continue; }
+                    socket.leave(roomsAll[i]);
+                }
+
+                socket.join(data);
+                socket.emit("room", data);
+                if(io.sockets.adapter.rooms.get(data).size == 1){
+                    socket.emit("messageLog", "Waiting for other player to join this room.");                
+                }else{
+                    io.in(data).emit("messageLog", "Waiting for both players to get ready.");             
+                }
+
+
+                room_name = data;
+                thisRoom = data_m[room_name];
+                if (typeof thisRoom === "undefined") {
+                    data_m[room_name] = {};
+                    thisRoom = data_m[room_name];
+                    thisRoom.history = {};
+                    thisRoom.count = 0;
+                    thisRoom.game = new gameClass(5);
+                    thisRoom.game.initialise();
+                    thisRoom.preview = thisRoom.game.storeConfig();
+                    thisRoom.inProgress = false;
+                    thisRoom.ready = [];
+                    thisRoom.readyOnce = false;                 
+                }                 
+                
+            }
         }catch(err){
-
-        }
-
-
-        if (data.length == 6) {
-            let roomsAll = Array.from(socket.rooms);
-            for (var i = 0; i < roomsAll.length; i++) {
-                if (roomsAll[i] == socket.id) { continue; }
-                socket.leave(roomsAll[i]);
-            }
-
-            socket.join(data);
-            socket.emit("room", data);
-            if(io.sockets.adapter.rooms.get(data).size == 1){
-                socket.emit("messageLog", "Waiting for other player to join this room.");                
-            }else{
-                io.in(data).emit("messageLog", "Waiting for both players to get ready.");                
-
-            }
-
-
-            room_name = data;
-            if (typeof data_m[room_name] === "undefined") {
-                data_m[room_name] = {};
-                data_m[room_name].history = {};
-                 data_m[room_name].count = 0;
-
-
-                 data_m[room_name].game = new gameClass(5);
-                 data_m[room_name].game.initialise();
-                 data_m[room_name].preview = data_m[room_name].game.storeConfig();
-                 data_m[room_name].inProgress = false;
-                 data_m[room_name].ready = [];
-                 data_m[room_name].playAgain = [];
-                 data_m[room_name].playAgainBool = false;
-                 data_m[room_name].readyOnce = false;
-                 
-            }
-
-            data_m[room_name][socket.id] = {};
-            data_m[room_name][socket.id].game = new gameClass(5);
-            data_m[room_name][socket.id].ready = false;
-
-
-            data_m[room_name][socket.id].game.game = JSON.parse(JSON.stringify(data_m[room_name].game.game));
-            data_m[room_name][socket.id].game.currentHole = JSON.parse(JSON.stringify(data_m[room_name].game.currentHole));
-
-            x = data_m[room_name];
-            
-            
+            console.log(err);
         }
     }
     socket.on('createroom', function (data) {
-        data = getRandomRoomName().toString();        
-        joinRoom(data);
-        
+
+        try{
+            data = getRandomRoomName().toString();        
+            joinRoom(data); 
+        }catch(err){
+            console.log(err);
+        }     
     });
 
 
@@ -312,33 +337,35 @@ function onConnection(socket) {
             socket.emit('ping', roomsAll1[1]);
         } else {
             socket.emit('ping', -1);
-
         }
     });
 
     
     socket.on('move', function (data) {
-        try{
-            data = JSON.parse(data);
-            let roomsAll1 = Array.from(socket.rooms);
 
-            if ((x.inProgress == false || x == null || x == undefined || typeof x === "undefined" || roomsAll1.length != 2 || isNaN(parseInt(data)))) {
+        try{
+            
+            if(checkIfCanRun()){
+                return;
+            }            
+            data = JSON.parse(data);
+            let members = Array.from(io.sockets.adapter.rooms.get(room_name));
+
+            if ((thisRoom.inProgress == false || isNaN(parseInt(data[0])) || members.length !=2)) {
                 return;
             }
-            x[socket.id].game.move(data[0]);
-            
+            thisRoom[socket.id].game.move(data[0]);            
 
-            socket.to(room_name).emit('move', JSON.stringify({"data":data[0],"length": x.count, "type" : 0}));
+            socket.to(room_name).emit('move', JSON.stringify({"data":data[0], "type" : 0}));
 
-            if(x[socket.id].game.compare(x.game.currentConfig, x[socket.id].game.storeConfig()) == 1 ){
-                x.inProgress = false;
+            if(thisRoom[socket.id].game.compare(thisRoom.game.currentConfig, thisRoom[socket.id].game.storeConfig()) == 1 ){
+                thisRoom.inProgress = false;
                 socket.emit("again",1);
                 socket.to(room_name).emit('again',0);
 
             }
 
             let otherId;
-            let members = Array.from(io.sockets.adapter.rooms.get(room_name));
 
             if(members[0] == socket.id){
                 otherId = members[1];
@@ -346,23 +373,19 @@ function onConnection(socket) {
                 otherId = members[0];
 
             }
-
-            if(JSON.stringify(data[2]) != JSON.stringify(x[socket.id].game.game)){
+            
+            if(compareArray(data[2],thisRoom[socket.id].game.game, 5, 5) == -1){
                 console.log("type1" );
                 socket.emit('reset', JSON.stringify({
                     type : 1,
-                    game : x[socket.id].game.game,
-                    gameCurrentHole : x[socket.id].game.currentHole,
+                    game : thisRoom[socket.id].game.game,
+                    gameCurrentHole : thisRoom[socket.id].game.currentHole,
                 }));
-            } else if(JSON.stringify(data[3]) != JSON.stringify(x[otherId].game.game)){
-                console.log("type2" );
-
+            } else if(compareArray(data[3],thisRoom[otherId].game.game, 5, 5) == -1){
                 socket.emit('reset', JSON.stringify({
                     type : 2,
-                    game : x[otherId].game.game,
-                    gameCurrentHole : x[otherId].game.currentHole,
-
-
+                    game : thisRoom[otherId].game.game,
+                    gameCurrentHole : thisRoom[otherId].game.currentHole,
                 }));
             }  
 
@@ -375,76 +398,69 @@ function onConnection(socket) {
     });
 
     socket.on('ready',function(data){
-        let members = Array.from(io.sockets.adapter.rooms.get(room_name));
-        if(x.ready.indexOf(socket.id) == -1 && members.length == 2 && !x.playAgainBool && x.inProgress == false){
-            x.ready.push(socket.id);
 
-            if(x.ready.indexOf(members[0]) > -1 && x.ready.indexOf(members[1]) > -1){
-                 data_m[room_name].playAgainBool = true;      
+        if(checkIfCanRun()){
+            return;
+        }
 
-                io.in(room_name).emit("start",1);
-                data_m[room_name].readyOnce = true;
+        try{
+            let members = Array.from(io.sockets.adapter.rooms.get(room_name));
+            if(thisRoom.ready.indexOf(socket.id) == -1 && members.length == 2 && thisRoom.inProgress == false){
+                thisRoom.ready.push(socket.id);
 
-                setTimeout(function(){
-                    x.inProgress = true;
+                if(thisRoom.ready.indexOf(members[0]) > -1 && thisRoom.ready.indexOf(members[1]) > -1){
 
-                    io.in(room_name).emit("changeConfig",JSON.stringify({currentHole:data_m[room_name].game.currentHole,game:data_m[room_name].game.game,preview:data_m[room_name].game.currentConfig}));
-                },3000);
-            }else{
-                socket.to(room_name).emit('messageLog','Waiting for you to get ready');
-                socket.emit('messageLog','Waiting for the other player to get ready');
+                    io.in(room_name).emit("start",1);
+                    thisRoom.readyOnce = true;
+
+                    thisRoom.game = new gameClass(5);
+                    thisRoom.game.initialise();
+                    thisRoom.preview = thisRoom.game.storeConfig();
+                    thisRoom.inProgress = false;
+                    thisRoom.ready = [];
+                    
+                    thisRoom[members[0]] = {};
+                    thisPlayer = thisRoom[members[0]];
+                    thisPlayer.game = new gameClass(5);
+                    thisPlayer.game.game = cloneArray(data_m[room_name].game.game, 2);
+                    thisPlayer.game.currentHole = cloneArray(data_m[room_name].game.currentHole, 1);
+
+
+                    thisRoom[members[1]] = {};
+                    otherPlayer = thisRoom[members[1]];
+                    otherPlayer.game = new gameClass(5);
+                    otherPlayer.game.game = cloneArray(data_m[room_name].game.game, 2);
+                    otherPlayer.game.currentHole = cloneArray(data_m[room_name].game.currentHole, 1);               
+
+                    setTimeout(function(){
+                        thisRoom.inProgress = true;
+                        io.in(room_name).emit("changeConfig",JSON.stringify({currentHole:data_m[room_name].game.currentHole,game:data_m[room_name].game.game,preview:data_m[room_name].game.currentConfig}));
+                    },3000);
+
+                }else{
+                    if(thisRoom.readyOnce){
+                        socket.to(room_name).emit('messageLog','The other person wants to play again. Press ready to play again.');
+                        socket.emit('messageLog','Waiting for the other player to get ready.');
+                    }else{
+                        socket.to(room_name).emit('messageLog','Waiting for you to get ready.');
+                        socket.emit('messageLog','Waiting for the other player to get ready.');
+                    }
+                }
             }
+        }catch(err){
+            console.log(err);
         }
     });
 
-    socket.on('again',function(data){
-        let members = Array.from(io.sockets.adapter.rooms.get(room_name));
-        data_m[room_name].inProgress = false;
 
-        if(x.playAgain.indexOf(socket.id) == -1 && members.length == 2){
-            x.playAgain.push(socket.id);
-            if(x.playAgain.indexOf(members[0]) > -1 && x.playAgain.indexOf(members[1]) > -1){
-                io.in(room_name).emit("start",1);
-                
-                data_m[room_name].game = new gameClass(5);
-                data_m[room_name].game.initialise();
-                data_m[room_name].preview = data_m[room_name].game.storeConfig();
-                data_m[room_name].inProgress = false;
-                data_m[room_name].ready = [members[0],members[1]];
-                data_m[room_name].playAgain = [];      
-
-                data_m[room_name][members[0]] = {};
-                data_m[room_name][members[0]].game = new gameClass(5);
-                data_m[room_name][members[0]].ready = false;
-
-
-                data_m[room_name][members[0]].game.game = JSON.parse(JSON.stringify(data_m[room_name].game.game));
-                data_m[room_name][members[0]].game.currentHole = JSON.parse(JSON.stringify(data_m[room_name].game.currentHole));
-
-                data_m[room_name][members[1]] = {};
-                data_m[room_name][members[1]].game = new gameClass(5);
-                data_m[room_name][members[1]].ready = false;
-
-
-                data_m[room_name][members[1]].game.game = JSON.parse(JSON.stringify(data_m[room_name].game.game));
-                data_m[room_name][members[1]].game.currentHole = JSON.parse(JSON.stringify(data_m[room_name].game.currentHole));
-                setTimeout(function(){
-                    x.inProgress = true;
-                    io.in(room_name).emit("changeConfig",JSON.stringify({currentHole:data_m[room_name].game.currentHole,game:data_m[room_name].game.game,preview:data_m[room_name].game.currentConfig}));
-                },3000);
-
-
-
-            }else{
-                socket.to(room_name).emit('messageLog','The other player wants to play again. Press play again to do it.');
-                socket.emit('messageLog','Waiting for the other to press play again.');
-            }
-        }
-    });
 
     socket.on('changeroom', function (data) {
-        var data = parseInt(data).toString();
-        joinRoom(data);
+        try{
+            var data = parseInt(data).toString();
+            joinRoom(data);
+        }catch(err){
+            console.log(err);
+        }
     });
 
 }
@@ -458,19 +474,23 @@ function delete_hist(room) {
 
 
 io.of("/").adapter.on("leave-room", (room, id) => {
-    if (room.toString().length == "6") {
-        let s = io.sockets.adapter.rooms.get(room);
-        if ((typeof s == "undefined" || s.size == 0)) {
-            delete_hist(room);
-        }else{
-            if(room in data_m && data_m[room].readyOnce){
-                io.in(room).emit('messageLog','The other player has left the room.');
-                
+    try{
+        if (room.toString().length == "6") {
+            let s = io.sockets.adapter.rooms.get(room);
+            if ((typeof s == "undefined" || s.size == 0)) {
+                delete_hist(room);
             }else{
-                io.in(room).emit('messageLog','The other player has left the room.');
+                if(room in data_m && data_m[room].readyOnce){
+                    io.in(room).emit('messageLog','The other player has left the room.');
+                    
+                }else{
+                    io.in(room).emit('messageLog','The other player has left the room.');
 
+                }
             }
         }
+    }catch(err){
+        console.log(err);
     }
 });
 
