@@ -21,3 +21,7 @@ If the protocal used is 'https,' then you have to also configure the following f
 
 You just need to serve the files in the 'client' folder. To make things easier (or harder for some people), config.js  
 is the place where the URL of the websocket server is stored.
+
+## How to play
+
+The rules for this game can be found [here](https://www.hasbro.com/common/documents/dad2884a1c4311ddbd0b0800200c9a66/D597E72E5056900B10F8D850BDEA6516.pdf).
