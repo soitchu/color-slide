@@ -24,4 +24,4 @@ is the place where the URL of the websocket server is stored.
 
 ## How to play
 
-The rules for this game can be found [here](https://www.hasbro.com/common/documents/dad2884a1c4311ddbd0b0800200c9a66/D597E72E5056900B10F8D850BDEA6516.pdf).
+The rules of this game can be found [here](https://www.hasbro.com/common/documents/dad2884a1c4311ddbd0b0800200c9a66/D597E72E5056900B10F8D850BDEA6516.pdf).
