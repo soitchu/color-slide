@@ -14,6 +14,8 @@ try{
 
 console.log(config);
 
+var queue = [];
+
 class gameClass {
     constructor(gameDiv, config) {
 
@@ -217,6 +219,54 @@ function getRandomRoomName() {
     }
 }
 
+function isActive(socketId){
+    let socket = io.sockets.sockets.get(socketId);
+    return (socket!== undefined && Array.from(socket.rooms).length == 1);
+}
+
+/*
+    Really, really, really unoptimised. Should be replaced for scalability. 
+*/
+function findNextActiveSocket(){
+    let i = 0;
+    let couple = [];
+    while(queue.length > 1 && couple.length <2){
+        let temp = queue[couple.length];
+        if(!isActive(temp)){
+            queue.splice(couple.length, 1);
+        }else{
+            if(couple.length == 1 && couple[0] == temp){
+                queue.splice(couple.length, 1);
+            }else{
+                couple.push(temp);
+            }
+        }
+    }
+    if(couple.length == 2){
+        queue.splice(0, 2);
+        return couple;
+    }else{
+        return false;
+    }
+    
+
+}
+
+function findMatch(){
+    while(true){
+        let couple = findNextActiveSocket();
+        let first = io.sockets.sockets.get(couple[0]);
+        let second = io.sockets.sockets.get(couple[1]);
+        let room = getRandomRoomName();
+        if(couple === false){
+            break;
+        }else{
+            first.emit("joinThis", room);
+            second.emit("joinThis", room);
+        }
+    }
+}
+
 function cloneArray(array,dimensions){
     let clonedArray = [];
     if(dimensions == 1){
@@ -248,49 +298,38 @@ function compareArray(array1, array2, dimen1, dimen2){
     return 1;
 }
 
+
+
 function onConnection(socket) {
-    var room_name;
-    var thisRoom;
+    let room_name;
+    let thisRoom;
+    let queueCheck = 0;
 
-    // Making the user leave the rooms its already in
-    let roomsAll = Array.from(socket.rooms);    
-    for (var i = 0; i < roomsAll.length; i++) {
-        if (roomsAll[i] == socket.id) { continue; }
-        socket.leave(roomsAll[i]);
-    }
-
-    function checkIfCanRun(){
-        if(thisRoom == null || thisRoom == undefined){
-            return true;
-        }
-        return false;
-    }
-
-
-    function joinRoom(data){
-
+    
+    function joinRoom(data, socket){
+        queueCheck = 0;
         try{
             let roomSize = io.sockets.adapter.rooms.get(data);
                 if(roomSize != undefined && roomSize != null && roomSize.size>=2){
                     socket.emit("message","There are already more than 2 people in this room.");
                     return;
                 }
-
-
+    
+    
             if (typeof thisRoom !== "undefined" && thisRoom.inProgress== true) {
                 socket.emit("message","A game is already in progress in this room");
                 return;
             }
-
-
-
+    
+    
+    
             if (data.length == 6) {
                 let roomsAll = Array.from(socket.rooms);
                 for (var i = 0; i < roomsAll.length; i++) {
                     if (roomsAll[i] == socket.id) { continue; }
                     socket.leave(roomsAll[i]);
                 }
-
+    
                 socket.join(data);
                 socket.emit("room", data);
                 if(io.sockets.adapter.rooms.get(data).size == 1){
@@ -298,8 +337,8 @@ function onConnection(socket) {
                 }else{
                     io.in(data).emit("messageLog", "Waiting for both players to get ready.");             
                 }
-
-
+    
+    
                 room_name = data;
                 thisRoom = data_m[room_name];
                 if (typeof thisRoom === "undefined") {
@@ -320,11 +359,27 @@ function onConnection(socket) {
             console.log(err);
         }
     }
+    // Making the user leave the rooms its already in
+    let roomsAll = Array.from(socket.rooms);    
+    for (var i = 0; i < roomsAll.length; i++) {
+        if (roomsAll[i] == socket.id) { continue; }
+        socket.leave(roomsAll[i]);
+    }
+
+    function checkIfCanRun(){
+        if(thisRoom == null || thisRoom == undefined){
+            return true;
+        }
+        return false;
+    }
+
+
+
     socket.on('createroom', function (data) {
 
         try{
             data = getRandomRoomName().toString();        
-            joinRoom(data); 
+            joinRoom(data, socket); 
         }catch(err){
             console.log(err);
         }     
@@ -375,7 +430,6 @@ function onConnection(socket) {
             }
             
             if(compareArray(data[2],thisRoom[socket.id].game.game, 5, 5) == -1){
-                console.log("type1" );
                 socket.emit('reset', JSON.stringify({
                     type : 1,
                     game : thisRoom[socket.id].game.game,
@@ -405,7 +459,7 @@ function onConnection(socket) {
 
         try{
             let members = Array.from(io.sockets.adapter.rooms.get(room_name));
-            if(thisRoom.ready.indexOf(socket.id) == -1 && members.length == 2 && thisRoom.inProgress == false){
+            if(thisRoom.ready.indexOf(socket.id) == -1 && members.length == 2){
                 thisRoom.ready.push(socket.id);
 
                 if(thisRoom.ready.indexOf(members[0]) > -1 && thisRoom.ready.indexOf(members[1]) > -1){
@@ -457,7 +511,19 @@ function onConnection(socket) {
     socket.on('changeroom', function (data) {
         try{
             var data = parseInt(data).toString();
-            joinRoom(data);
+            joinRoom(data, socket);
+        }catch(err){
+            console.log(err);
+        }
+    });
+
+    socket.on('queue', function (data) {
+        try{
+            if(queueCheck == 0){
+                queueCheck = 1;
+                socket.emit("queue","yes");
+                queue.push(socket.id);
+            }
         }catch(err){
             console.log(err);
         }
@@ -496,7 +562,7 @@ io.of("/").adapter.on("leave-room", (room, id) => {
 
 
 setInterval(function () {
-    var keys = Object.keys(data_m);
+    let keys = Object.keys(data_m);
     for (var i = 0; i < keys.length; i++) {
         let s = io.sockets.adapter.rooms.get(data_m[i]);
         if (typeof s == "undefined" || s.size == 0) {
@@ -507,6 +573,9 @@ setInterval(function () {
 
 }, 6000);
 
+setInterval(function(){
+    findMatch();
+},1000);
 
 server.listen(port, () => console.log('listening on port ' + port));
 

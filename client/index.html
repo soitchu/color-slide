@@ -10,11 +10,17 @@
 
     <div id="container">
     <div class="overlay"></div>
+    <div id="queueMessage">Waiting in the queue...</div>
     <div class="menu">
         <div id="hostGame">
             <div>
                 Host a game! <br/><br/>
                 <button onclick="pickRoom();">Host</button>
+            </div>
+            <br/><br/>
+            <div>
+                Or join the queue <br/><br/>
+                <button onclick="joinQueue();">Queue</button>
             </div>
         </div>
         <div id="line"></div>
@@ -57,6 +63,12 @@
     function again(){
         socket.emit('again', 'yes');
     }
+
+    function joinQueue(){
+        socket.emit('queue', 'yes');
+    }
+
+    
     var count = 0;
     var shouldISendData = false;
     var localHistory = [];
@@ -121,6 +133,10 @@
         alert(data);
     });
 
+    socket.on('queue', function (data) {
+        document.getElementById("queueMessage").style.display = "block";
+    });
+
     socket.on('messageLog', function (data) {
         document.querySelector("#messageDiv").innerText = data;
     });
@@ -128,7 +144,8 @@
     
 
     socket.on('room', function (data) {
-        
+        document.getElementById("queueMessage").style.display = "none";
+
         room_n = data;
         document.querySelector('#roomNumDiv').innerText = `Room number : #${room_n}`;
         document.querySelector(".menu").style.display = "none";
@@ -171,6 +188,10 @@
             document.querySelector("#messageDiv").innerText = `You lost :( Press ready again to play again.`;
 
         }
+    });
+
+    socket.on('joinThis',function(room){
+        changeRoom(room);
     });
     socket.on('move', function (data) {
         if(!shouldISendData){

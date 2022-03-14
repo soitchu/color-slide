@@ -234,6 +234,22 @@ box-shadow:inset 0 -0.6em 0 -0.35em rgba(0,0,0,0);
     margin: 10px;
     top:50px;bottom:auto;left:0;display: none;
 }
+
+#queueMessage{
+    display: none;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    position:absolute;
+    top: 0;
+    background-color: white;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size:15px;
+    font-family: 'Montserrat', sans-serif;
+    border-radius: 10px;
+}
+
 @media only screen and (max-width: 900px) {
     .game_container {
       flex-direction: column;
