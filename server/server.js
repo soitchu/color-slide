@@ -3,7 +3,9 @@ const fs = require('fs');
 const app = express();
 const http = require('http');
 const https = require('https');
+let LinkedList = require('./linkedList.js');
 var config;
+
 
 
 try{
@@ -14,7 +16,7 @@ try{
 
 console.log(config);
 
-var queue = [];
+var queue = new LinkedList();
 
 class gameClass {
     constructor(gameDiv, config) {
@@ -231,19 +233,20 @@ function findNextActiveSocket(){
     let i = 0;
     let couple = [];
     while(queue.length > 1 && couple.length <2){
-        let temp = queue[couple.length];
+        let temp = queue.value(couple.length);
         if(!isActive(temp)){
-            queue.splice(couple.length, 1);
+            queue.removeElementAtIndex(couple.length);
         }else{
             if(couple.length == 1 && couple[0] == temp){
-                queue.splice(couple.length, 1);
+                queue.removeElementAtIndex(couple.length);
             }else{
                 couple.push(temp);
             }
         }
     }
     if(couple.length == 2){
-        queue.splice(0, 2);
+        queue.deleteHead();
+        queue.deleteHead();
         return couple;
     }else{
         return false;
@@ -304,8 +307,13 @@ function onConnection(socket) {
     let room_name;
     let thisRoom;
     let queueCheck = 0;
-
-    
+    let queueNode = null;
+    // Making the user leave the rooms its already in
+    let roomsAll = Array.from(socket.rooms);    
+    for (var i = 0; i < roomsAll.length; i++) {
+        if (roomsAll[i] == socket.id) { continue; }
+        socket.leave(roomsAll[i]);
+    }
     function joinRoom(data, socket){
         queueCheck = 0;
         try{
@@ -359,12 +367,7 @@ function onConnection(socket) {
             console.log(err);
         }
     }
-    // Making the user leave the rooms its already in
-    let roomsAll = Array.from(socket.rooms);    
-    for (var i = 0; i < roomsAll.length; i++) {
-        if (roomsAll[i] == socket.id) { continue; }
-        socket.leave(roomsAll[i]);
-    }
+
 
     function checkIfCanRun(){
         if(thisRoom == null || thisRoom == undefined){
@@ -522,12 +525,19 @@ function onConnection(socket) {
             if(queueCheck == 0){
                 queueCheck = 1;
                 socket.emit("queue","yes");
-                queue.push(socket.id);
+                queueNode = queue.push(socket.id);
             }
         }catch(err){
             console.log(err);
         }
     });
+
+    socket.on('disconnect', function() {
+        if(queueNode !== null){
+            queue.removeElement(queueNode);
+        }
+
+     });
 
 }
 io.on('connection', onConnection);
@@ -541,6 +551,7 @@ function delete_hist(room) {
 
 io.of("/").adapter.on("leave-room", (room, id) => {
     try{
+        
         if (room.toString().length == "6") {
             let s = io.sockets.adapter.rooms.get(room);
             if ((typeof s == "undefined" || s.size == 0)) {
@@ -575,7 +586,7 @@ setInterval(function () {
 
 setInterval(function(){
     findMatch();
-},1000);
+},10000);
 
 server.listen(port, () => console.log('listening on port ' + port));
 
