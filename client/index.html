@@ -103,6 +103,8 @@
     socket.on('disconnect', function(){
         document.querySelector(".menu").style.display = "flex";
         document.querySelector(".game_container").style.display = "none";
+        document.getElementById("queueMessage").style.display = "none";
+
     });
     function joinRoom(){
         let tempRoom = document.getElementById("roomNumInput").value;

@@ -204,21 +204,33 @@ const io = require("socket.io")(server, {
 const port = config.webSocketPort;
 
 var data_m = {};
+let currentRoom = 0;
 
+function randomRange(min, max) {
+    return Math.floor(Math.random() * (max - min) + min);
+}
 /*
-    Getting an empty room number when trying to host the game
-    This is an extremely unoptimised way to do it; I plan to changing it later
+    Changed the previous function to get random room numbers
+    But this still does not seem that efficient, so I plan on
+    changing it later on
 */
 function getRandomRoomName() {
-    let rn = 100000 + Math.floor(Math.random() * 899999);
+    let rn =(100 + randomRange(0,899))*1000  + currentRoom;
+    currentRoom++;
+    if(currentRoom > 999){
+        currentRoom = 0;
+    }
+
     let s = io.sockets.adapter.rooms.get(rn);
     if (typeof s == "undefined") {
         return rn;
     } else if (s.size == 0) {
         return rn;
     } else {
+        console.log(s.size)
         return getRandomRoomName();
     }
+
 }
 
 function isActive(socketId){
@@ -260,10 +272,10 @@ function findMatch(){
         let couple = findNextActiveSocket();
         let first = io.sockets.sockets.get(couple[0]);
         let second = io.sockets.sockets.get(couple[1]);
-        let room = getRandomRoomName();
         if(couple === false){
             break;
         }else{
+            let room = getRandomRoomName();
             first.emit("joinThis", room);
             second.emit("joinThis", room);
         }
@@ -572,21 +584,21 @@ io.of("/").adapter.on("leave-room", (room, id) => {
 });
 
 
-setInterval(function () {
-    let keys = Object.keys(data_m);
-    for (var i = 0; i < keys.length; i++) {
-        let s = io.sockets.adapter.rooms.get(data_m[i]);
-        if (typeof s == "undefined" || s.size == 0) {
-            delete_hist(data_m[i]);
-        }
+// setInterval(function () {
+//     let keys = Object.keys(data_m);
+//     for (var i = 0; i < keys.length; i++) {
+//         let s = io.sockets.adapter.rooms.get(data_m[i]);
+//         if (typeof s == "undefined" || s.size == 0) {
+//             delete_hist(data_m[i]);
+//         }
 
-    }
+//     }
 
-}, 6000);
+// }, 60000);
 
 setInterval(function(){
     findMatch();
-},10000);
+},1000);
 
 server.listen(port, () => console.log('listening on port ' + port));
 
