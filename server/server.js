@@ -328,6 +328,9 @@ function onConnection(socket) {
     }
     function joinRoom(data, socket){
         queueCheck = 0;
+        if(queueNode !== null){
+            queue.removeElement(queueNode);
+        }
         try{
             let roomSize = io.sockets.adapter.rooms.get(data);
                 if(roomSize != undefined && roomSize != null && roomSize.size>=2){
@@ -474,7 +477,7 @@ function onConnection(socket) {
 
         try{
             let members = Array.from(io.sockets.adapter.rooms.get(room_name));
-            if(thisRoom.ready.indexOf(socket.id) == -1 && members.length == 2){
+            if(thisRoom.ready.indexOf(socket.id) == -1 && members.length == 2  && thisRoom.inProgress == false){
                 thisRoom.ready.push(socket.id);
 
                 if(thisRoom.ready.indexOf(members[0]) > -1 && thisRoom.ready.indexOf(members[1]) > -1){
@@ -486,7 +489,6 @@ function onConnection(socket) {
                     thisRoom.game.initialise();
                     thisRoom.preview = thisRoom.game.storeConfig();
                     thisRoom.inProgress = false;
-                    thisRoom.ready = [];
                     
                     thisRoom[members[0]] = {};
                     thisPlayer = thisRoom[members[0]];
@@ -502,6 +504,8 @@ function onConnection(socket) {
                     otherPlayer.game.currentHole = cloneArray(data_m[room_name].game.currentHole, 1);               
 
                     setTimeout(function(){
+                        thisRoom.ready = [];
+
                         thisRoom.inProgress = true;
                         io.in(room_name).emit("changeConfig",JSON.stringify({currentHole:data_m[room_name].game.currentHole,game:data_m[room_name].game.game,preview:data_m[room_name].game.currentConfig}));
                     },3000);
@@ -510,6 +514,7 @@ function onConnection(socket) {
                     if(thisRoom.readyOnce){
                         socket.to(room_name).emit('messageLog','The other person wants to play again. Press ready to play again.');
                         socket.emit('messageLog','Waiting for the other player to get ready.');
+                        console.log(thisRoom.ready);
                     }else{
                         socket.to(room_name).emit('messageLog','Waiting for you to get ready.');
                         socket.emit('messageLog','Waiting for the other player to get ready.');

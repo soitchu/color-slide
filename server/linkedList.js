@@ -106,9 +106,4 @@ module.exports = class LinkedList{
             this.length--;
         }
     }
-
-
-    
-
-
 }
