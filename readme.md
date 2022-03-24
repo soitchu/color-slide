@@ -1,3 +1,6 @@
+## Demo
+https://rubiks-race.herokuapp.com/
+
 ## Installation (server)
 
 Run the following command in the server folder:

@@ -8,12 +8,7 @@ var config;
 
 
 
-try{
-    config = JSON.parse(fs.readFileSync('config.json'));
-}catch(err){
-    config = JSON.parse(fs.readFileSync('config.json'));
-}
-
+config = JSON.parse(fs.readFileSync('config.json'));
 console.log(config);
 
 var queue = new LinkedList();
@@ -211,7 +206,7 @@ function randomRange(min, max) {
 }
 /*
     Changed the previous function to get random room numbers
-    But this still does not seem that efficient, so I plan on
+    But this still does not seem that efficient/secure, so I plan on
     changing it later on
 */
 function getRandomRoomName() {
@@ -238,9 +233,7 @@ function isActive(socketId){
     return (socket!== undefined && Array.from(socket.rooms).length == 1);
 }
 
-/*
-    Really, really, really unoptimised. Should be replaced for scalability. 
-*/
+
 function findNextActiveSocket(){
     let i = 0;
     let couple = [];
@@ -573,14 +566,8 @@ io.of("/").adapter.on("leave-room", (room, id) => {
             let s = io.sockets.adapter.rooms.get(room);
             if ((typeof s == "undefined" || s.size == 0)) {
                 delete_hist(room);
-            }else{
-                if(room in data_m && data_m[room].readyOnce){
-                    io.in(room).emit('messageLog','The other player has left the room.');
-                    
-                }else{
-                    io.in(room).emit('messageLog','The other player has left the room.');
-
-                }
+            }else{                
+                io.in(room).emit('messageLog','The other player has left the room.');                
             }
         }
     }catch(err){
