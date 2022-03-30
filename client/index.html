@@ -547,6 +547,8 @@
 
         let shadowContainer = document.createElement("div");
         shadowContainer.className = "shadowCon";
+        shadowContainer.style.height = this.config.size*3 + this.config.margin*7 + 20 + "px";
+        shadowContainer.style.width = this.config.size*3 + this.config.margin*7 + "px";
         this.main.append(shadowContainer);
 
 

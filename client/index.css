@@ -75,9 +75,15 @@
 
 .shadowCon{
     position: absolute;
-    top:0;
-    left: 0;
-    padding: 10px;
+
+    z-index: 1;
+    background: #dfc8c8;
+    width: calc(40% + 10px);
+    height: calc(40% + 20px);
+    border-radius: 10px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
     z-index: 1;
 }  
 
