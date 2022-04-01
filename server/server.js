@@ -279,7 +279,7 @@ function findMatch() {
             let room = getRandomRoomName();
             first.emit("joinThis", room);
             second.emit("joinThis", room);
-            ssetTimeout(function () {
+            setTimeout(function () {
 
                 let members = Array.from(io.sockets.adapter.rooms.get(room.toString()));
                 let mem1 = members.indexOf(couple[0]);
@@ -294,6 +294,9 @@ function findMatch() {
                     leaveAllRoom(first);
                     queue.shift(couple[0]);
                     first.emit("queue", "yes");
+                }else{
+                    first.emit("show", 1);
+                    second.emit("show", 1);
                 }
             }, 1000);
         }
@@ -344,7 +347,7 @@ function onConnection(socket) {
         if (roomsAll[i] == socket.id) { continue; }
         socket.leave(roomsAll[i]);
     }
-    function joinRoom(data, socket) {
+    function joinRoom(data, socket, isQueue = 0) {
         queueCheck = 0;
         if (queueNode !== null) {
             queue.removeElement(queueNode);
@@ -372,7 +375,8 @@ function onConnection(socket) {
                 }
 
                 socket.join(data);
-                socket.emit("room", data);
+                
+                socket.emit("room", JSON.stringify([isQueue, data]));
                 if (io.sockets.adapter.rooms.get(data).size == 1) {
                     socket.emit("messageLog", "Waiting for other player to join this room.");
                 } else {
@@ -548,8 +552,10 @@ function onConnection(socket) {
 
     socket.on('changeroom', function (data) {
         try {
-            var data = parseInt(data).toString();
-            joinRoom(data, socket);
+            data = JSON.parse(data);
+            console.log(data);
+            let roomNum = data[1].toString();
+            joinRoom(roomNum, socket, data[0]);
         } catch (err) {
             console.log(err);
         }

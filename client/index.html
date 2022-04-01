@@ -78,18 +78,6 @@
     var socket = io(config.webSocketUrl);
     var room_n;
 
-    function askToJoin() {
-        room_n = prompt(`You're currently not in a room. Type a room number below to join`, 100000);
-        if (parseInt(room_n).toString().length == 6) {
-            changeRoom(room_n);
-        } else {
-            alert("Not a valid room number");
-            setTimeout(function () {
-                askToJoin();
-
-            }, 1000);
-        }
-    }
 
     function pickRoom(){
         socket.emit("createroom","join");
@@ -113,13 +101,13 @@
         let tempRoom = document.getElementById("roomNumInput").value;
 
         if (parseInt(tempRoom).toString().length == 6) {
-            changeRoom(tempRoom);
+            changeRoom([0,tempRoom]);
         } else {
             alert("Not a valid room number. The room number must be between 100000 and 999999");
         }
     }
     function changeRoom(x) {
-        socket.emit('changeroom', x);
+        socket.emit('changeroom', JSON.stringify(x));
     }
 
     // askToJoin();
@@ -148,21 +136,35 @@
         document.querySelector("#messageDiv").innerText = data;
     });
 
+    socket.on('show', function (data) {
+        document.getElementById("queueMessage").style.display = "none";
+        document.querySelector(".menu").style.display = "none";
+        document.querySelector(".game_container").style.display = "flex";
+    });
+
     
 
     socket.on('room', function (data) {
-        document.getElementById("queueMessage").style.display = "none";
+        try{
+            data = JSON.parse(data);
+            if(parseInt(data[0]) !== 1){
+                document.getElementById("queueMessage").style.display = "none";
+                document.querySelector(".menu").style.display = "none";
+                document.querySelector(".game_container").style.display = "flex";
+            }
+            
 
-        room_n = data;
-        document.querySelector('#roomNumDiv').innerText = `Room number : #${room_n}`;
-        document.querySelector(".menu").style.display = "none";
-        document.querySelector(".game_container").style.display = "flex";
+            room_n = data[1];
+            document.querySelector('#roomNumDiv').innerText = `Room number : #${room_n}`;
 
-        document.querySelectorAll(".game_main")[0].innerHTML = "";
-        document.querySelectorAll(".game_main")[1].innerHTML = "";
-        document.querySelector(".preview").innerHTML = "";
-        document.querySelector("#playAgain").style.display='none';
-
+            document.querySelectorAll(".game_main")[0].innerHTML = "";
+            document.querySelectorAll(".game_main")[1].innerHTML = "";
+            document.querySelector(".preview").innerHTML = "";
+            document.querySelector("#playAgain").style.display='none';
+        }catch(err){
+            console.log(err);
+            alert("Unexpected Error.");
+        }
 
     });
 
@@ -198,7 +200,7 @@
     });
 
     socket.on('joinThis',function(room){
-        changeRoom(room);
+        changeRoom([1,room]);
     });
     socket.on('move', function (data) {
         if(!shouldISendData){
