@@ -31,7 +31,7 @@ class gameClass {
 
         /// The hole's position is represented by a '0' and it's location is on the bottom-right
         this.game[this.tileCountTotal - 1][this.tileCountTotal - 1] = 0;
-        this.currentHole = [this.tileCountTotal - 1, this.tileCountTotal - 1];        
+        this.currentHole = [this.tileCountTotal - 1, this.tileCountTotal - 1];
     }
 
 
@@ -80,7 +80,7 @@ class gameClass {
         }
 
 
-       
+
 
 
 
@@ -135,16 +135,16 @@ class gameClass {
         }
 
     }
-    storeConfig(){
+    storeConfig() {
         let temp = [];
 
-        for(var i = 1; i <= 3; i++){
+        for (var i = 1; i <= 3; i++) {
             temp.push([]);
-            for(var j = 1; j <= 3; j++){
-                if(this.game[i][j] == 0){
-                    temp[i-1].push(-1);
-                }else{
-                    temp[i-1].push(this.game[i][j]%6);
+            for (var j = 1; j <= 3; j++) {
+                if (this.game[i][j] == 0) {
+                    temp[i - 1].push(-1);
+                } else {
+                    temp[i - 1].push(this.game[i][j] % 6);
                 }
             }
         }
@@ -163,7 +163,7 @@ class gameClass {
     }
     initialise() {
 
-        
+
         this.randomise();
         this.currentConfig = this.storeConfig();
         this.randomise();
@@ -179,13 +179,13 @@ class gameClass {
 
 var server;
 
-if(config.protocol == "https"){
+if (config.protocol == "https") {
     server = https.createServer({
-          key: fs.readFileSync(config.key, 'utf8'),
-          cert: fs.readFileSync(config.cert, 'utf8'),
-          ca: fs.readFileSync(config.ca, 'utf8')
+        key: fs.readFileSync(config.key, 'utf8'),
+        cert: fs.readFileSync(config.cert, 'utf8'),
+        ca: fs.readFileSync(config.ca, 'utf8')
     }, app);
-}else{
+} else {
     server = http.createServer(app);
 }
 
@@ -195,7 +195,7 @@ const io = require("socket.io")(server, {
         methods: ["GET"],
         credentials: true,
     }
-}); 
+});
 const port = config.webSocketPort;
 
 var data_m = {};
@@ -210,9 +210,9 @@ function randomRange(min, max) {
     changing it later on
 */
 function getRandomRoomName() {
-    let rn =(100 + randomRange(0,899))*1000  + currentRoom;
+    let rn = (100 + randomRange(0, 899)) * 1000 + currentRoom;
     currentRoom++;
-    if(currentRoom > 999){
+    if (currentRoom > 999) {
         currentRoom = 0;
     }
 
@@ -228,76 +228,101 @@ function getRandomRoomName() {
 
 }
 
-function isActive(socketId){
+function isActive(socketId) {
     let socket = io.sockets.sockets.get(socketId);
-    return (socket!== undefined && Array.from(socket.rooms).length == 1);
+    return (socket !== undefined && Array.from(socket.rooms).length == 1);
 }
 
 
-function findNextActiveSocket(){
+function findNextActiveSocket() {
     let i = 0;
     let couple = [];
-    while(queue.length > 1 && couple.length <2){
+    while (queue.length > 1 && couple.length < 2) {
         let temp = queue.value(couple.length);
-        if(!isActive(temp)){
+        if (!isActive(temp)) {
             queue.removeElementAtIndex(couple.length);
-        }else{
-            if(couple.length == 1 && couple[0] == temp){
+        } else {
+            if (couple.length == 1 && couple[0] == temp) {
                 queue.removeElementAtIndex(couple.length);
-            }else{
+            } else {
                 couple.push(temp);
             }
         }
     }
-    if(couple.length == 2){
+    if (couple.length == 2) {
         queue.deleteHead();
         queue.deleteHead();
         return couple;
-    }else{
+    } else {
         return false;
     }
-    
+
 
 }
 
-function findMatch(){
-    while(true){
+
+function leaveAllRoom(socket){
+    let roomsAll = Array.from(socket.rooms);
+    for (var i = 0; i < roomsAll.length; i++) {
+        if (roomsAll[i] == socket.id) { continue; }
+        socket.leave(roomsAll[i]);
+    }
+}
+function findMatch() {
+    while (true) {
         let couple = findNextActiveSocket();
         let first = io.sockets.sockets.get(couple[0]);
         let second = io.sockets.sockets.get(couple[1]);
-        if(couple === false){
+        if (couple === false) {
             break;
-        }else{
+        } else {
             let room = getRandomRoomName();
             first.emit("joinThis", room);
             second.emit("joinThis", room);
+            ssetTimeout(function () {
+
+                let members = Array.from(io.sockets.adapter.rooms.get(room.toString()));
+                let mem1 = members.indexOf(couple[0]);
+                let mem2 = members.indexOf(couple[1]);
+                console.log(mem1, members, couple);
+                if (mem1 == -1 && mem2 == -1) {
+                } else if (mem1 == -1) {
+                    leaveAllRoom(second);
+                    queue.shift(couple[1]);
+                    second.emit("queue", "yes");
+                } else if (mem2 == -1) {
+                    leaveAllRoom(first);
+                    queue.shift(couple[0]);
+                    first.emit("queue", "yes");
+                }
+            }, 1000);
         }
     }
 }
 
-function cloneArray(array,dimensions){
+function cloneArray(array, dimensions) {
     let clonedArray = [];
-    if(dimensions == 1){
-        for(var i = 0; i < array.length; i++){
+    if (dimensions == 1) {
+        for (var i = 0; i < array.length; i++) {
             clonedArray.push(array[i]);
         }
-    }else if(dimensions == 2){
-        for(var i = 0; i < array.length; i++){
+    } else if (dimensions == 2) {
+        for (var i = 0; i < array.length; i++) {
             let temp = [];
-            for(var j = 0; j < array[i].length; j++){
+            for (var j = 0; j < array[i].length; j++) {
                 temp.push(array[i][j]);
             }
             clonedArray.push(temp);
-        }        
+        }
     }
 
     return clonedArray;
 }
 
-function compareArray(array1, array2, dimen1, dimen2){
-    for(var i = 0; i < dimen1; i++){
-        for(var j = 0; j < dimen2; j++){
-            if(array1[i][j] != array2[i][j]){
+function compareArray(array1, array2, dimen1, dimen2) {
+    for (var i = 0; i < dimen1; i++) {
+        for (var j = 0; j < dimen2; j++) {
+            if (array1[i][j] != array2[i][j]) {
                 return -1;
             }
         }
@@ -314,47 +339,47 @@ function onConnection(socket) {
     let queueCheck = 0;
     let queueNode = null;
     // Making the user leave the rooms its already in
-    let roomsAll = Array.from(socket.rooms);    
+    let roomsAll = Array.from(socket.rooms);
     for (var i = 0; i < roomsAll.length; i++) {
         if (roomsAll[i] == socket.id) { continue; }
         socket.leave(roomsAll[i]);
     }
-    function joinRoom(data, socket){
+    function joinRoom(data, socket) {
         queueCheck = 0;
-        if(queueNode !== null){
+        if (queueNode !== null) {
             queue.removeElement(queueNode);
         }
-        try{
+        try {
             let roomSize = io.sockets.adapter.rooms.get(data);
-                if(roomSize != undefined && roomSize != null && roomSize.size>=2){
-                    socket.emit("message","There are already more than 2 people in this room.");
-                    return;
-                }
-    
-    
-            if (typeof thisRoom !== "undefined" && thisRoom.inProgress== true) {
-                socket.emit("message","A game is already in progress in this room");
+            if (roomSize != undefined && roomSize != null && roomSize.size >= 2) {
+                socket.emit("message", "There are already more than 2 people in this room.");
                 return;
             }
-    
-    
-    
+
+
+            if (typeof thisRoom !== "undefined" && thisRoom.inProgress == true) {
+                socket.emit("message", "A game is already in progress in this room");
+                return;
+            }
+
+
+
             if (data.length == 6) {
                 let roomsAll = Array.from(socket.rooms);
                 for (var i = 0; i < roomsAll.length; i++) {
                     if (roomsAll[i] == socket.id) { continue; }
                     socket.leave(roomsAll[i]);
                 }
-    
+
                 socket.join(data);
                 socket.emit("room", data);
-                if(io.sockets.adapter.rooms.get(data).size == 1){
-                    socket.emit("messageLog", "Waiting for other player to join this room.");                
-                }else{
-                    io.in(data).emit("messageLog", "Waiting for both players to get ready.");             
+                if (io.sockets.adapter.rooms.get(data).size == 1) {
+                    socket.emit("messageLog", "Waiting for other player to join this room.");
+                } else {
+                    io.in(data).emit("messageLog", "Waiting for both players to get ready.");
                 }
-    
-    
+
+
                 room_name = data;
                 thisRoom = data_m[room_name];
                 if (typeof thisRoom === "undefined") {
@@ -367,18 +392,18 @@ function onConnection(socket) {
                     thisRoom.preview = thisRoom.game.storeConfig();
                     thisRoom.inProgress = false;
                     thisRoom.ready = [];
-                    thisRoom.readyOnce = false;                 
-                }                 
-                
+                    thisRoom.readyOnce = false;
+                }
+
             }
-        }catch(err){
+        } catch (err) {
             console.log(err);
         }
     }
 
 
-    function checkIfCanRun(){
-        if(thisRoom == null || thisRoom == undefined){
+    function checkIfCanRun() {
+        if (thisRoom == null || thisRoom == undefined) {
             return true;
         }
         return false;
@@ -388,12 +413,12 @@ function onConnection(socket) {
 
     socket.on('createroom', function (data) {
 
-        try{
-            data = getRandomRoomName().toString();        
-            joinRoom(data, socket); 
-        }catch(err){
+        try {
+            data = getRandomRoomName().toString();
+            joinRoom(data, socket);
+        } catch (err) {
             console.log(err);
-        }     
+        }
     });
 
 
@@ -406,83 +431,83 @@ function onConnection(socket) {
         }
     });
 
-    
+
     socket.on('move', function (data) {
 
-        try{
-            
-            if(checkIfCanRun()){
+        try {
+
+            if (checkIfCanRun()) {
                 return;
-            }            
+            }
             data = JSON.parse(data);
             let members = Array.from(io.sockets.adapter.rooms.get(room_name));
 
-            if ((thisRoom.inProgress == false || isNaN(parseInt(data[0])) || members.length !=2)) {
+            if ((thisRoom.inProgress == false || isNaN(parseInt(data[0])) || members.length != 2)) {
                 return;
             }
-            thisRoom[socket.id].game.move(data[0]);            
+            thisRoom[socket.id].game.move(data[0]);
 
-            socket.to(room_name).emit('move', JSON.stringify({"data":data[0], "type" : 0}));
+            socket.to(room_name).emit('move', JSON.stringify({ "data": data[0], "type": 0 }));
 
-            if(thisRoom[socket.id].game.compare(thisRoom.game.currentConfig, thisRoom[socket.id].game.storeConfig()) == 1 ){
+            if (thisRoom[socket.id].game.compare(thisRoom.game.currentConfig, thisRoom[socket.id].game.storeConfig()) == 1) {
                 thisRoom.inProgress = false;
-                socket.emit("again",1);
-                socket.to(room_name).emit('again',0);
+                socket.emit("again", 1);
+                socket.to(room_name).emit('again', 0);
 
             }
 
             let otherId;
 
-            if(members[0] == socket.id){
+            if (members[0] == socket.id) {
                 otherId = members[1];
-            }else{
+            } else {
                 otherId = members[0];
 
             }
-            
-            if(compareArray(data[2],thisRoom[socket.id].game.game, 5, 5) == -1){
+
+            if (compareArray(data[2], thisRoom[socket.id].game.game, 5, 5) == -1) {
                 socket.emit('reset', JSON.stringify({
-                    type : 1,
-                    game : thisRoom[socket.id].game.game,
-                    gameCurrentHole : thisRoom[socket.id].game.currentHole,
+                    type: 1,
+                    game: thisRoom[socket.id].game.game,
+                    gameCurrentHole: thisRoom[socket.id].game.currentHole,
                 }));
-            } else if(compareArray(data[3],thisRoom[otherId].game.game, 5, 5) == -1){
+            } else if (compareArray(data[3], thisRoom[otherId].game.game, 5, 5) == -1) {
                 socket.emit('reset', JSON.stringify({
-                    type : 2,
-                    game : thisRoom[otherId].game.game,
-                    gameCurrentHole : thisRoom[otherId].game.currentHole,
+                    type: 2,
+                    game: thisRoom[otherId].game.game,
+                    gameCurrentHole: thisRoom[otherId].game.currentHole,
                 }));
-            }  
+            }
 
 
 
-        }catch(err){
+        } catch (err) {
             console.log(err);
         }
-        
+
     });
 
-    socket.on('ready',function(data){
+    socket.on('ready', function (data) {
 
-        if(checkIfCanRun()){
+        if (checkIfCanRun()) {
             return;
         }
 
-        try{
+        try {
             let members = Array.from(io.sockets.adapter.rooms.get(room_name));
-            if(thisRoom.ready.indexOf(socket.id) == -1 && members.length == 2  && thisRoom.inProgress == false){
+            if (thisRoom.ready.indexOf(socket.id) == -1 && members.length == 2 && thisRoom.inProgress == false) {
                 thisRoom.ready.push(socket.id);
 
-                if(thisRoom.ready.indexOf(members[0]) > -1 && thisRoom.ready.indexOf(members[1]) > -1){
+                if (thisRoom.ready.indexOf(members[0]) > -1 && thisRoom.ready.indexOf(members[1]) > -1) {
 
-                    io.in(room_name).emit("start",1);
+                    io.in(room_name).emit("start", 1);
                     thisRoom.readyOnce = true;
 
                     thisRoom.game = new gameClass(5);
                     thisRoom.game.initialise();
                     thisRoom.preview = thisRoom.game.storeConfig();
                     thisRoom.inProgress = false;
-                    
+
                     thisRoom[members[0]] = {};
                     thisPlayer = thisRoom[members[0]];
                     thisPlayer.game = new gameClass(5);
@@ -494,27 +519,27 @@ function onConnection(socket) {
                     otherPlayer = thisRoom[members[1]];
                     otherPlayer.game = new gameClass(5);
                     otherPlayer.game.game = cloneArray(data_m[room_name].game.game, 2);
-                    otherPlayer.game.currentHole = cloneArray(data_m[room_name].game.currentHole, 1);               
+                    otherPlayer.game.currentHole = cloneArray(data_m[room_name].game.currentHole, 1);
 
-                    setTimeout(function(){
+                    setTimeout(function () {
                         thisRoom.ready = [];
 
                         thisRoom.inProgress = true;
-                        io.in(room_name).emit("changeConfig",JSON.stringify({currentHole:data_m[room_name].game.currentHole,game:data_m[room_name].game.game,preview:data_m[room_name].game.currentConfig}));
-                    },3000);
+                        io.in(room_name).emit("changeConfig", JSON.stringify({ currentHole: data_m[room_name].game.currentHole, game: data_m[room_name].game.game, preview: data_m[room_name].game.currentConfig }));
+                    }, 3000);
 
-                }else{
-                    if(thisRoom.readyOnce){
-                        socket.to(room_name).emit('messageLog','The other person wants to play again. Press ready to play again.');
-                        socket.emit('messageLog','Waiting for the other player to get ready.');
+                } else {
+                    if (thisRoom.readyOnce) {
+                        socket.to(room_name).emit('messageLog', 'The other person wants to play again. Press ready to play again.');
+                        socket.emit('messageLog', 'Waiting for the other player to get ready.');
                         console.log(thisRoom.ready);
-                    }else{
-                        socket.to(room_name).emit('messageLog','Waiting for you to get ready.');
-                        socket.emit('messageLog','Waiting for the other player to get ready.');
+                    } else {
+                        socket.to(room_name).emit('messageLog', 'Waiting for you to get ready.');
+                        socket.emit('messageLog', 'Waiting for the other player to get ready.');
                     }
                 }
             }
-        }catch(err){
+        } catch (err) {
             console.log(err);
         }
     });
@@ -522,32 +547,32 @@ function onConnection(socket) {
 
 
     socket.on('changeroom', function (data) {
-        try{
+        try {
             var data = parseInt(data).toString();
             joinRoom(data, socket);
-        }catch(err){
+        } catch (err) {
             console.log(err);
         }
     });
 
     socket.on('queue', function (data) {
-        try{
-            if(queueCheck == 0){
+        try {
+            if (queueCheck == 0) {
                 queueCheck = 1;
-                socket.emit("queue","yes");
+                socket.emit("queue", "yes");
                 queueNode = queue.push(socket.id);
             }
-        }catch(err){
+        } catch (err) {
             console.log(err);
         }
     });
 
-    socket.on('disconnect', function() {
-        if(queueNode !== null){
+    socket.on('disconnect', function () {
+        if (queueNode !== null) {
             queue.removeElement(queueNode);
         }
 
-     });
+    });
 
 }
 io.on('connection', onConnection);
@@ -560,17 +585,17 @@ function delete_hist(room) {
 
 
 io.of("/").adapter.on("leave-room", (room, id) => {
-    try{
-        
+    try {
+
         if (room.toString().length == "6") {
             let s = io.sockets.adapter.rooms.get(room);
             if ((typeof s == "undefined" || s.size == 0)) {
                 delete_hist(room);
-            }else{                
-                io.in(room).emit('messageLog','The other player has left the room.');                
+            } else {
+                io.in(room).emit('messageLog', 'The other player has left the room.');
             }
         }
-    }catch(err){
+    } catch (err) {
         console.log(err);
     }
 });
@@ -588,9 +613,9 @@ io.of("/").adapter.on("leave-room", (room, id) => {
 
 // }, 60000);
 
-setInterval(function(){
+setInterval(function () {
     findMatch();
-},1000);
+}, 1000);
 
 server.listen(port, () => console.log('listening on port ' + port));
 

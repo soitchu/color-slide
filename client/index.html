@@ -99,11 +99,14 @@
         document.querySelector(".menu").style.display = "flex";
         document.querySelector(".game_container").style.display = "none";
     }
-
-    socket.on('disconnect', function(){
+    function closeMenu(){
         document.querySelector(".menu").style.display = "flex";
         document.querySelector(".game_container").style.display = "none";
         document.getElementById("queueMessage").style.display = "none";
+    }
+
+    socket.on('disconnect', function(){
+        closeMenu();
 
     });
     function joinRoom(){
@@ -136,7 +139,9 @@
     });
 
     socket.on('queue', function (data) {
+        closeMenu();
         document.getElementById("queueMessage").style.display = "block";
+
     });
 
     socket.on('messageLog', function (data) {
