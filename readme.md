@@ -22,8 +22,7 @@ If the protocal used is 'https,' then you have to also configure the following f
 
 ## Installation (client)
 
-You just need to serve the files in the 'client' folder. To make things easier (or harder for some people), config.js  
-is the place where the URL of the websocket server is stored.
+You just need to serve the files in the 'client' folder. 'webSocketUrl' is the variable where the URL of the websocket server is stored.
 
 ## How to play
 
