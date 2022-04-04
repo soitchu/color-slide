@@ -280,23 +280,26 @@ function findMatch() {
             first.emit("joinThis", room);
             second.emit("joinThis", room);
             setTimeout(function () {
-
-                let members = Array.from(io.sockets.adapter.rooms.get(room.toString()));
-                let mem1 = members.indexOf(couple[0]);
-                let mem2 = members.indexOf(couple[1]);
-                console.log(mem1, members, couple);
-                if (mem1 == -1 && mem2 == -1) {
-                } else if (mem1 == -1) {
-                    leaveAllRoom(second);
-                    queue.shift(couple[1]);
-                    second.emit("queue", "yes");
-                } else if (mem2 == -1) {
-                    leaveAllRoom(first);
-                    queue.shift(couple[0]);
-                    first.emit("queue", "yes");
-                }else{
-                    first.emit("show", 1);
-                    second.emit("show", 1);
+                try{
+                    let members = Array.from(io.sockets.adapter.rooms.get(room.toString()));
+                    let mem1 = members.indexOf(couple[0]);
+                    let mem2 = members.indexOf(couple[1]);
+                    console.log(mem1, members, couple);
+                    if (mem1 == -1 && mem2 == -1) {
+                    } else if (mem1 == -1) {
+                        leaveAllRoom(second);
+                        queue.shift(couple[1]);
+                        second.emit("queue", "yes");
+                    } else if (mem2 == -1) {
+                        leaveAllRoom(first);
+                        queue.shift(couple[0]);
+                        first.emit("queue", "yes");
+                    }else{
+                        first.emit("show", 1);
+                        second.emit("show", 1);
+                    }
+                }catch(err){
+                    console.log(err);
                 }
             }, 1000);
         }
