@@ -344,6 +344,7 @@ function onConnection(socket) {
     let thisRoom;
     let queueCheck = 0;
     let queueNode = null;
+    let lastRoom;
     // Making the user leave the rooms its already in
     let roomsAll = Array.from(socket.rooms);
     for (var i = 0; i < roomsAll.length; i++) {
@@ -351,6 +352,10 @@ function onConnection(socket) {
         socket.leave(roomsAll[i]);
     }
     function joinRoom(data, socket, isQueue = 0) {
+        if(Date.now() - lastRoom  < 1000){
+            return;
+        }
+        lastRoom = Date.now();
         queueCheck = 0;
         if (queueNode !== null) {
             queue.removeElement(queueNode);
@@ -610,17 +615,6 @@ io.of("/").adapter.on("leave-room", (room, id) => {
 });
 
 
-// setInterval(function () {
-//     let keys = Object.keys(data_m);
-//     for (var i = 0; i < keys.length; i++) {
-//         let s = io.sockets.adapter.rooms.get(data_m[i]);
-//         if (typeof s == "undefined" || s.size == 0) {
-//             delete_hist(data_m[i]);
-//         }
-
-//     }
-
-// }, 60000);
 
 setInterval(function () {
     findMatch();

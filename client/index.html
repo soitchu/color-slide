@@ -111,7 +111,6 @@
             socket.emit('changeroom', JSON.stringify(x));
         }
 
-        // askToJoin();
 
         setInterval(function () {
             socket.emit('ping', "");
@@ -218,7 +217,6 @@
         });
 
         socket.on('changeConfig', function (data) {
-            console.log(data);
             data = JSON.parse(data);
             Object.assign(game.game, JSON.parse(JSON.stringify(data.game)));
             Object.assign(game.currentHole, JSON.parse(JSON.stringify(data.currentHole)));
@@ -233,7 +231,6 @@
 
         socket.on('reset', function (data) {
             data = JSON.parse(data);
-            console.log(data);
 
             if (data.type == 1) {
                 shouldISendData = false;
@@ -294,15 +291,7 @@
                 this.locations = {};
 
                 var self = this;
-                // window.onresize = function(){
-                //     if((window.innerWidth < ((this.config.size + 2*this.config.margin)*(this.config.n) + 20)) || window.innerWidth < 400 ){
-                //         this.config.margin = 5;
-                //         this.config.size = Math.floor(((window.innerWidth - 70)/this.config.n) - 2*this.config.margin );
-                //     }
-                //     console.log(this.config);
 
-                //     // self.reinitialise();
-                // };
             }
 
             /*
@@ -593,7 +582,6 @@
                         let tempColumn = document.createElement("div");
                         tempColumn.className = "game_column";
                         for (var j = 0; j < 3; j++) {
-                            console.log(this.currentConfig);
                             tempColumn.append(this.createPreviewTile(this.currentConfig[i][j]));
                         }
                         previewCon.append(tempColumn);
@@ -702,7 +690,6 @@
                     }
                 }
             } else {
-                console.log(yDiff);
                 if (Math.abs(yDiff) > 30) {
                     if (yDiff < 0) {
                         game.move(1);
@@ -716,9 +703,7 @@
                 }
             }
         });
-        window.addEventListener("touchcancel", function (event) {
-            console.log(event.changedTouches);
-        });
+
 
     }
 
