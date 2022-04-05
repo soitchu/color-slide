@@ -5,6 +5,7 @@
     "key": "",
     "cert": "",
     "ca" : "",
-    "cors" : "*"
+    "cors" : "*",
+    "heroku" : false
 
 }

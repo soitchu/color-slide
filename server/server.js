@@ -175,8 +175,9 @@ class gameClass {
 };
 
 
-
-
+if(config.heroku){
+    app.use('/', express.static('../client'));
+}
 var server;
 
 if (config.protocol == "https") {
@@ -620,7 +621,7 @@ setInterval(function () {
     findMatch();
 }, 1000);
 
-server.listen(port, () => console.log('listening on port ' + port));
+server.listen((process.env.PORT || port), () => console.log('listening on port ' + port));
 
 
 
