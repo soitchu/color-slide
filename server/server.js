@@ -176,7 +176,7 @@ class gameClass {
 
 
 if(config.heroku){
-    app.use('/', express.static('../client'));
+    app.use('/', express.static('client'));
 }
 var server;
 
