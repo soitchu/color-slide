@@ -33,29 +33,32 @@ class gameClass {
     }
 
     move(dir) {
-        let xOffset = 0, yOffset = 0;
-
-        /// dir 3 : top
-        /// dir 1 : bottom
+        /// dir 3 : up
+        /// dir 1 : down
         /// dir 4 : left
         /// dir 2 : right
 
-        if (dir === 3) {
-            yOffset = -1;
-        } else if (dir === 1) {
-            yOffset = 1;
-        } else if (dir === 4) {
-            xOffset = -1;
-        } else if (dir === 2) {
-            xOffset = 1;
-        }
+        // NOTE: This could be simplified (removing the *-1) if the meanings of
+        //       the dir numbers were swapped with their counterpart (i.e. 3 with 1, 4 with 2)
+        // Adding 0 gets rid of -0 from the results, for simplicity
+        const xOffset = (dir - 3) % 2 * -1 + 0
+        const yOffset = (dir - 2) % 2 * -1 + 0;
 
-        if ((this.currentHole[0] + yOffset) >= (this.tileCountTotal) || (this.currentHole[1] + xOffset) >= (this.tileCountTotal) || (this.currentHole[1] + xOffset) < 0 || (this.currentHole[0] + yOffset) < 0) {
-            return -1;
-        }
+        /*
+            dir 1: [ 0, 1 ]
+            dir 2: [ 1, 0 ]
+            dir 3: [ 0, -1 ]
+            dir 4: [ -1, 0 ]
+        */
 
         /// Getting the coordinates of the hole adjacent, which is determined by the variable 'dir'
         const holeAbove = [this.currentHole[0] + yOffset, this.currentHole[1] + xOffset];
+
+        for(const coordinate of holeAbove) {
+            if(coordinate >= this.tileCountTotal || coordinate < 0) {
+                return -1
+            }
+        }
 
         /// Swapping the numbers in the main game array
         const tempNum = this.game[holeAbove[0]][holeAbove[1]];
@@ -63,9 +66,9 @@ class gameClass {
         this.game[this.currentHole[0]][this.currentHole[1]] = tempNum;
 
         /// Changing the hole's position to its current location
-        if (yOffset !== 0) {
+        if (yOffset) {
             this.currentHole[0] += yOffset;
-        } else if (xOffset !== 0) {
+        } else if (xOffset) {
             this.currentHole[1] += xOffset;
         }
     }
@@ -108,13 +111,11 @@ class gameClass {
             } else if (this.currentHole[1] === (this.tileCountTotal - 1) && this.currentHole[0] === (this.tileCountTotal - 1)) {
                 random = [3, 4];
             }
-
         }
 
         for (let i = 0; i < 5; i++) {
             this.move(2);
             this.move(1);
-
         }
     }
 
