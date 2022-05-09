@@ -158,10 +158,11 @@ if(config.heroku) {
 
 let server;
 if (config.protocol === "https") {
+    const { key, cert, ca } = config
     server = https.createServer({
-        key: fs.readFileSync(config.key, 'utf8'),
-        cert: fs.readFileSync(config.cert, 'utf8'),
-        ca: fs.readFileSync(config.ca, 'utf8')
+        key,
+        cert,
+        ca,
     }, app);
 } else {
     server = http.createServer(app);
