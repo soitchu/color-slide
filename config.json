@@ -6,6 +6,6 @@
     "cert": "",
     "ca" : "",
     "cors" : "*",
-    "heroku" : false
+    "heroku" : true
 
 }

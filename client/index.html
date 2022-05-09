@@ -22,6 +22,11 @@
                     Or join the queue <br /><br />
                     <button id="queueBut">Queue</button>
                 </div>
+                <br /><br />
+                <div>
+                    Or Play Solo <br /><br />
+                    <button id="soloBut">Solo</button>
+                </div>
             </div>
             <div id="line"></div>
 
@@ -69,7 +74,9 @@
             socket.emit('queue', 'yes');
         }
 
-
+        function goToSolo() {
+            window.location = "solo.html";
+        }
         var count = 0;
         var shouldISendData = false;
         var localHistory = [];
@@ -606,6 +613,7 @@
 
         document.getElementById("hostBut").addEventListener("click", pickRoom);
         document.getElementById("queueBut").addEventListener("click", joinQueue);
+        document.getElementById("soloBut").addEventListener("click", goToSolo);
         document.getElementById("joinBut").addEventListener("click", joinRoom);
         document.getElementById("ready").addEventListener("click", ready);
         game_div = document.getElementsByClassName("game_main")[0];
