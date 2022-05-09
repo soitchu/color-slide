@@ -13,8 +13,8 @@ console.log(config);
 const queue = new LinkedList();
 
 class gameClass {
-    constructor(gameDiv, config) {
-        this.tileCountTotal = 5;
+    constructor(config = 5) {
+        this.tileCountTotal = config;
         this.game = [];
         this.colors = ["#000000", "#ffffff", "#b83030", "#0b1470", "#b5c229", "#b04272"];
         this.canMove = false;
