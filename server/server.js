@@ -90,7 +90,6 @@ class gameClass {
         /// original configuration; this will ensure that it is always possible for the user
         /// to use legal moves to go back to the original configuration to win the game
         var times = Math.floor(Math.random() * 20) + 200;
-        var last = 0;
 
         /// As the hole is initially at the bottom left, the first moves should be top or left
         var random = [1, 2, 3, 4];
