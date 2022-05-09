@@ -32,7 +32,7 @@ class gameClass {
         this.currentHole = [this.tileCountTotal - 1, this.tileCountTotal - 1];
     }
 
-    move(dir, wonAlert = true) {
+    move(dir) {
         let xOffset = 0, yOffset = 0;
 
         /// dir 3 : top
@@ -85,7 +85,7 @@ class gameClass {
 
             /// If the move made does not affect the configration of the game, then try again
             /// so hopefully we don't get the same move again.
-            if (this.move(moved, false) === -1) {
+            if (this.move(moved) === -1) {
                 i--;
                 continue;
             }
@@ -112,8 +112,8 @@ class gameClass {
         }
 
         for (let i = 0; i < 5; i++) {
-            this.move(2, false);
-            this.move(1, false);
+            this.move(2);
+            this.move(1);
 
         }
     }
@@ -450,7 +450,7 @@ function onConnection(socket) {
         }
     });
 
-    socket.on('ready', (data) => {
+    socket.on('ready', () => {
         if (checkIfCanRun()) {
             return;
         }
@@ -513,7 +513,7 @@ function onConnection(socket) {
         }
     });
 
-    socket.on('queue', (data) => {
+    socket.on('queue', () => {
         try {
             if (queueCheck === 0) {
                 queueCheck = 1;
@@ -540,7 +540,7 @@ function delete_hist(room) {
     }
 }
 
-io.of("/").adapter.on("leave-room", (room, id) => {
+io.of("/").adapter.on("leave-room", (room) => {
     try {
         if (room.toString().length === "6") {
             const s = io.sockets.adapter.rooms.get(room);
