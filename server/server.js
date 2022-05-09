@@ -288,18 +288,8 @@ function findMatch() {
     }
 }
 
-function cloneArray(array, dimensions) {
-    const clonedArray = [];
-    if (dimensions === 1) {
-        clonedArray.push(...array)
-    } else if (dimensions === 2) {
-        for (let i = 0; i < array.length; i++) {
-            clonedArray.push([...array[i]]);
-        }
-    }
-
-    return clonedArray;
-}
+const cloneArray = (array) =>
+    array.map(element => element instanceof Array ? cloneArray(element) : element);
 
 function compareArray(array1, array2, dimen1, dimen2) {
     for (let i = 0; i < dimen1; i++) {
@@ -476,14 +466,14 @@ function onConnection(socket) {
                     thisRoom[members[0]] = {};
                     thisPlayer = thisRoom[members[0]];
                     thisPlayer.game = new gameClass(5);
-                    thisPlayer.game.game = cloneArray(data_m[room_name].game.game, 2);
-                    thisPlayer.game.currentHole = cloneArray(data_m[room_name].game.currentHole, 1);
+                    thisPlayer.game.game = cloneArray(data_m[room_name].game.game);
+                    thisPlayer.game.currentHole = cloneArray(data_m[room_name].game.currentHole);
 
                     thisRoom[members[1]] = {};
                     otherPlayer = thisRoom[members[1]];
                     otherPlayer.game = new gameClass(5);
-                    otherPlayer.game.game = cloneArray(data_m[room_name].game.game, 2);
-                    otherPlayer.game.currentHole = cloneArray(data_m[room_name].game.currentHole, 1);
+                    otherPlayer.game.game = cloneArray(data_m[room_name].game.game);
+                    otherPlayer.game.currentHole = cloneArray(data_m[room_name].game.currentHole);
 
                     setTimeout(() => {
                         thisRoom.ready = [];
