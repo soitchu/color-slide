@@ -556,4 +556,4 @@ io.of("/").adapter.on("leave-room", (room) => {
 
 setInterval(findMatch, 1000);
 
-server.listen((process.env.PORT || port), () => console.log("listening on port " + port));
+server.listen((process.env.PORT || port), () => console.log(`listening on port ${port}`));
