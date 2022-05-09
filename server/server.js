@@ -79,6 +79,8 @@ class gameClass {
         /// to use legal moves to go back to the original configuration to win the game
         const times = Math.floor(Math.random() * 20) + 200;
 
+        // FIXME: It should be possible to use a constant time set of operations to determine
+        //        the fixed array of legal moves, and then you don't have to hope for good moves
         /// As the hole is initially at the bottom left, the first moves should be top or left
         let random = [1, 2, 3, 4];
         for (let i = 0; i < times; i++) {
@@ -93,6 +95,9 @@ class gameClass {
                 continue;
             }
 
+            // FIXME: Why? I'm curious the reason for this limitation; I don't see
+            //        anything wrong with a move that in essence reverts the position.
+            //        I feel like if anything, this would limit the entropy further
             /// The next random array should not undo what the last move did,
             /// so eliminating that possibility
             if (moved === 3 || moved === 1) {
