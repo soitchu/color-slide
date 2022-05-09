@@ -14,7 +14,6 @@ const queue = new LinkedList();
 
 class gameClass {
     constructor(gameDiv, config) {
-
         this.tileCountTotal = 5;
         this.game = [];
         this.colors = ["#000000", "#ffffff", "#b83030", "#0b1470", "#b5c229", "#b04272"];
@@ -32,9 +31,6 @@ class gameClass {
         this.game[this.tileCountTotal - 1][this.tileCountTotal - 1] = 0;
         this.currentHole = [this.tileCountTotal - 1, this.tileCountTotal - 1];
     }
-
-
-
 
     move(dir, wonAlert = true) {
         let xOffset = 0, yOffset = 0;
@@ -54,17 +50,12 @@ class gameClass {
             xOffset = 1;
         }
 
-
         if ((this.currentHole[0] + yOffset) >= (this.tileCountTotal) || (this.currentHole[1] + xOffset) >= (this.tileCountTotal) || (this.currentHole[1] + xOffset) < 0 || (this.currentHole[0] + yOffset) < 0) {
             return -1;
         }
 
         /// Getting the coordinates of the hole adjacent, which is determined by the variable 'dir'
         const holeAbove = [this.currentHole[0] + yOffset, this.currentHole[1] + xOffset];
-
-
-
-
 
         /// Swapping the numbers in the main game array
         const tempNum = this.game[holeAbove[0]][holeAbove[1]];
@@ -77,12 +68,6 @@ class gameClass {
         } else if (xOffset !== 0) {
             this.currentHole[1] += xOffset;
         }
-
-
-
-
-
-
     }
 
     randomise() {
@@ -131,8 +116,8 @@ class gameClass {
             this.move(1, false);
 
         }
-
     }
+
     storeConfig() {
         const temp = [];
 
@@ -159,25 +144,19 @@ class gameClass {
         }
         return 1;
     }
+
     initialise() {
-
-
         this.randomise();
         this.currentConfig = this.storeConfig();
         this.randomise();
-
-
     }
-
-
 };
 
-
-if(config.heroku){
+if(config.heroku) {
     app.use('/', express.static('client'));
 }
-let server;
 
+let server;
 if (config.protocol === "https") {
     server = https.createServer({
         key: fs.readFileSync(config.key, 'utf8'),
@@ -203,6 +182,7 @@ let currentRoom = 0;
 function randomRange(min, max) {
     return Math.floor(Math.random() * (max - min) + min);
 }
+
 /*
     Changed the previous function to get random room numbers
     But this still does not seem that efficient/secure, so I plan on
@@ -232,7 +212,6 @@ function isActive(socketId) {
     return (socket !== undefined && Array.from(socket.rooms).length === 1);
 }
 
-
 function findNextActiveSocket() {
     const couple = [];
     while (queue.length > 1 && couple.length < 2) {
@@ -254,18 +233,16 @@ function findNextActiveSocket() {
     } else {
         return false;
     }
-
-
 }
 
-
-function leaveAllRoom(socket){
+function leaveAllRoom(socket) {
     const roomsAll = Array.from(socket.rooms);
     for (let i = 0; i < roomsAll.length; i++) {
         if (roomsAll[i] === socket.id) { continue; }
         socket.leave(roomsAll[i]);
     }
 }
+
 function findMatch() {
     while (true) {
         const couple = findNextActiveSocket();
@@ -278,7 +255,7 @@ function findMatch() {
             first.emit("joinThis", room);
             second.emit("joinThis", room);
             setTimeout(function () {
-                try{
+                try {
                     const members = Array.from(io.sockets.adapter.rooms.get(room.toString()));
                     const mem1 = members.indexOf(couple[0]);
                     const mem2 = members.indexOf(couple[1]);
@@ -292,11 +269,11 @@ function findMatch() {
                         leaveAllRoom(first);
                         queue.shift(couple[0]);
                         first.emit("queue", "yes");
-                    }else{
+                    } else {
                         first.emit("show", 1);
                         second.emit("show", 1);
                     }
-                }catch(err){
+                } catch(err) {
                     console.log(err);
                 }
             }, 1000);
@@ -335,8 +312,6 @@ function compareArray(array1, array2, dimen1, dimen2) {
     return 1;
 }
 
-
-
 function onConnection(socket) {
     let room_name;
     let thisRoom;
@@ -349,8 +324,9 @@ function onConnection(socket) {
         if (roomsAll[i] === socket.id) { continue; }
         socket.leave(roomsAll[i]);
     }
+
     function joinRoom(data, socket, isQueue = 0) {
-        if(Date.now() - lastRoom  < 1000){
+        if(Date.now() - lastRoom < 1000) {
             return;
         }
         lastRoom = Date.now();
@@ -365,13 +341,10 @@ function onConnection(socket) {
                 return;
             }
 
-
             if (typeof thisRoom !== "undefined" && thisRoom.inProgress === true) {
                 socket.emit("message", "A game is already in progress in this room");
                 return;
             }
-
-
 
             if (data.length === 6) {
                 let roomsAll = Array.from(socket.rooms);
@@ -388,7 +361,6 @@ function onConnection(socket) {
                 } else {
                     io.in(data).emit("messageLog", "Waiting for both players to get ready.");
                 }
-
 
                 room_name = data;
                 thisRoom = data_m[room_name];
@@ -411,15 +383,12 @@ function onConnection(socket) {
         }
     }
 
-
     function checkIfCanRun() {
         if (thisRoom === null || thisRoom === undefined) {
             return true;
         }
         return false;
     }
-
-
 
     socket.on('createroom', function (data) {
 
@@ -431,7 +400,6 @@ function onConnection(socket) {
         }
     });
 
-
     socket.on('ping', function (data) {
         const roomsAll1 = Array.from(socket.rooms);
         if (roomsAll1.length > 1) {
@@ -441,11 +409,8 @@ function onConnection(socket) {
         }
     });
 
-
     socket.on('move', function (data) {
-
         try {
-
             if (checkIfCanRun()) {
                 return;
             }
@@ -463,7 +428,6 @@ function onConnection(socket) {
                 thisRoom.inProgress = false;
                 socket.emit("again", 1);
                 socket.to(room_name).emit('again', 0);
-
             }
 
             const otherId = (members[0] === socket.id) ? members[1] : members[0];
@@ -481,17 +445,12 @@ function onConnection(socket) {
                     gameCurrentHole: thisRoom[otherId].game.currentHole,
                 }));
             }
-
-
-
         } catch (err) {
             console.log(err);
         }
-
     });
 
     socket.on('ready', function (data) {
-
         if (checkIfCanRun()) {
             return;
         }
@@ -502,7 +461,6 @@ function onConnection(socket) {
                 thisRoom.ready.push(socket.id);
 
                 if (thisRoom.ready.indexOf(members[0]) > -1 && thisRoom.ready.indexOf(members[1]) > -1) {
-
                     io.in(room_name).emit("start", 1);
                     thisRoom.readyOnce = true;
 
@@ -517,7 +475,6 @@ function onConnection(socket) {
                     thisPlayer.game.game = cloneArray(data_m[room_name].game.game, 2);
                     thisPlayer.game.currentHole = cloneArray(data_m[room_name].game.currentHole, 1);
 
-
                     thisRoom[members[1]] = {};
                     otherPlayer = thisRoom[members[1]];
                     otherPlayer.game = new gameClass(5);
@@ -526,11 +483,9 @@ function onConnection(socket) {
 
                     setTimeout(function () {
                         thisRoom.ready = [];
-
                         thisRoom.inProgress = true;
                         io.in(room_name).emit("changeConfig", JSON.stringify({ currentHole: data_m[room_name].game.currentHole, game: data_m[room_name].game.game, preview: data_m[room_name].game.currentConfig }));
                     }, 3000);
-
                 } else {
                     if (thisRoom.readyOnce) {
                         socket.to(room_name).emit('messageLog', 'The other person wants to play again. Press ready to play again.');
@@ -546,8 +501,6 @@ function onConnection(socket) {
             console.log(err);
         }
     });
-
-
 
     socket.on('changeroom', function (data) {
         try {
@@ -576,7 +529,6 @@ function onConnection(socket) {
         if (queueNode !== null) {
             queue.removeElement(queueNode);
         }
-
     });
 
 }
@@ -588,10 +540,8 @@ function delete_hist(room) {
     }
 }
 
-
 io.of("/").adapter.on("leave-room", (room, id) => {
     try {
-
         if (room.toString().length === "6") {
             const s = io.sockets.adapter.rooms.get(room);
             if ((typeof s === "undefined" || s.size === 0)) {
@@ -604,8 +554,6 @@ io.of("/").adapter.on("leave-room", (room, id) => {
         console.log(err);
     }
 });
-
-
 
 setInterval(function () {
     findMatch();
