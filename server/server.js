@@ -1,10 +1,10 @@
-const express = require('express');
-const fs = require('fs');
+const express = require("express");
+const fs = require("fs");
 const app = express();
-const http = require('http');
-const https = require('https');
-const LinkedList = require('./linkedList.js');
-const config = require('./config.json');
+const http = require("http");
+const https = require("https");
+const LinkedList = require("./linkedList.js");
+const config = require("./config.json");
 
 
 
@@ -27,7 +27,7 @@ class gameClass {
             }
         }
 
-        /// The hole's position is represented by a '0' and it's location is on the bottom-right
+        /// The hole's position is represented by a "0" and it's location is on the bottom-right
         this.game[this.tileCountTotal - 1][this.tileCountTotal - 1] = 0;
         this.currentHole = [this.tileCountTotal - 1, this.tileCountTotal - 1];
     }
@@ -159,7 +159,7 @@ class gameClass {
 };
 
 if(config.heroku) {
-    app.use('/', express.static('client'));
+    app.use("/", express.static("client"));
 }
 
 let server;
@@ -381,7 +381,7 @@ function onConnection(socket) {
         return false;
     }
 
-    socket.on('createroom', (data) => {
+    socket.on("createroom", (data) => {
 
         try {
             data = getRandomRoomName().toString();
@@ -391,16 +391,16 @@ function onConnection(socket) {
         }
     });
 
-    socket.on('ping', (data) => {
+    socket.on("ping", (data) => {
         const roomsAll1 = Array.from(socket.rooms);
         if (roomsAll1.length > 1) {
-            socket.emit('ping', roomsAll1[1]);
+            socket.emit("ping", roomsAll1[1]);
         } else {
-            socket.emit('ping', -1);
+            socket.emit("ping", -1);
         }
     });
 
-    socket.on('move', (data) => {
+    socket.on("move", (data) => {
         try {
             if (checkIfCanRun()) {
                 return;
@@ -413,7 +413,7 @@ function onConnection(socket) {
             }
             thisRoom[socket.id].game.move(data[0]);
 
-            socket.to(room_name).emit('move', JSON.stringify({
+            socket.to(room_name).emit("move", JSON.stringify({
                 type: 0,
                 data: data[0],
             }));
@@ -421,19 +421,19 @@ function onConnection(socket) {
             if (thisRoom[socket.id].game.compare(thisRoom.game.currentConfig, thisRoom[socket.id].game.storeConfig()) === 1) {
                 thisRoom.inProgress = false;
                 socket.emit("again", 1);
-                socket.to(room_name).emit('again', 0);
+                socket.to(room_name).emit("again", 0);
             }
 
             const otherId = (members[0] === socket.id) ? members[1] : members[0];
 
             if (compareArray(data[2], thisRoom[socket.id].game.game, 5, 5) === -1) {
-                socket.emit('reset', JSON.stringify({
+                socket.emit("reset", JSON.stringify({
                     type: 1,
                     game: thisRoom[socket.id].game.game,
                     gameCurrentHole: thisRoom[socket.id].game.currentHole,
                 }));
             } else if (compareArray(data[3], thisRoom[otherId].game.game, 5, 5) === -1) {
-                socket.emit('reset', JSON.stringify({
+                socket.emit("reset", JSON.stringify({
                     type: 2,
                     game: thisRoom[otherId].game.game,
                     gameCurrentHole: thisRoom[otherId].game.currentHole,
@@ -444,7 +444,7 @@ function onConnection(socket) {
         }
     });
 
-    socket.on('ready', () => {
+    socket.on("ready", () => {
         if (checkIfCanRun()) {
             return;
         }
@@ -487,12 +487,12 @@ function onConnection(socket) {
                     }, 3000);
                 } else {
                     if (thisRoom.readyOnce) {
-                        socket.to(room_name).emit('messageLog', 'The other person wants to play again. Press ready to play again.');
-                        socket.emit('messageLog', 'Waiting for the other player to get ready.');
+                        socket.to(room_name).emit("messageLog", "The other person wants to play again. Press ready to play again.");
+                        socket.emit("messageLog", "Waiting for the other player to get ready.");
                         console.log(thisRoom.ready);
                     } else {
-                        socket.to(room_name).emit('messageLog', 'Waiting for you to get ready.');
-                        socket.emit('messageLog', 'Waiting for the other player to get ready.');
+                        socket.to(room_name).emit("messageLog", "Waiting for you to get ready.");
+                        socket.emit("messageLog", "Waiting for the other player to get ready.");
                     }
                 }
             }
@@ -501,7 +501,7 @@ function onConnection(socket) {
         }
     });
 
-    socket.on('changeroom', (data) => {
+    socket.on("changeroom", (data) => {
         try {
             data = JSON.parse(data);
             console.log(data);
@@ -512,7 +512,7 @@ function onConnection(socket) {
         }
     });
 
-    socket.on('queue', () => {
+    socket.on("queue", () => {
         try {
             if (queueCheck === 0) {
                 queueCheck = 1;
@@ -524,14 +524,14 @@ function onConnection(socket) {
         }
     });
 
-    socket.on('disconnect', () => {
+    socket.on("disconnect", () => {
         if (queueNode !== null) {
             queue.removeElement(queueNode);
         }
     });
 
 }
-io.on('connection', onConnection);
+io.on("connection", onConnection);
 
 function delete_hist(room) {
     if (typeof data_m[room] !== "undefined") {
@@ -546,7 +546,7 @@ io.of("/").adapter.on("leave-room", (room) => {
             if ((typeof s === "undefined" || s.size === 0)) {
                 delete_hist(room);
             } else {
-                io.in(room).emit('messageLog', 'The other player has left the room.');
+                io.in(room).emit("messageLog", "The other player has left the room.");
             }
         }
     } catch (err) {
@@ -556,4 +556,4 @@ io.of("/").adapter.on("leave-room", (room) => {
 
 setInterval(findMatch, 1000);
 
-server.listen((process.env.PORT || port), () => console.log('listening on port ' + port));
+server.listen((process.env.PORT || port), () => console.log("listening on port " + port));
