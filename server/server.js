@@ -77,7 +77,7 @@ class gameClass {
         /// The initial state of the game is determined by moving the tiles from the
         /// original configuration; this will ensure that it is always possible for the user
         /// to use legal moves to go back to the original configuration to win the game
-        const times = Math.floor(Math.random() * 20) + 200;
+        const times = randomRange(220, 200);
 
         // FIXME: It should be possible to use a constant time set of operations to determine
         //        the fixed array of legal moves, and then you don't have to hope for good moves
@@ -85,7 +85,7 @@ class gameClass {
         let random = [1, 2, 3, 4];
         for (let i = 0; i < times; i++) {
             /// Choosing a random move to make
-            const last = (Math.floor(Math.random() * 100)) % (random.length);
+            const last = randomRange(100) % random.length;
             const moved = random[last];
 
             /// If the move made does not affect the configration of the game, then try again
@@ -196,7 +196,7 @@ function randomRange(max, min = 0) {
     changing it later on
 */
 function getRandomRoomName() {
-    const rn = (100 + randomRange(899)) * 1000 + currentRoom;
+    const rn = randomRange(999, 100) * 1000 + currentRoom;
     currentRoom++;
     if (currentRoom > 999) {
         currentRoom = 0;
