@@ -44,13 +44,13 @@ class gameClass {
         /// dir 4 : left
         /// dir 2 : right
 
-        if (dir == 3) {
+        if (dir === 3) {
             yOffset = -1;
-        } else if (dir == 1) {
+        } else if (dir === 1) {
             yOffset = 1;
-        } else if (dir == 4) {
+        } else if (dir === 4) {
             xOffset = -1;
-        } else if (dir == 2) {
+        } else if (dir === 2) {
             xOffset = 1;
         }
 
@@ -72,9 +72,9 @@ class gameClass {
         this.game[this.currentHole[0]][this.currentHole[1]] = tempNum;
 
         /// Changing the hole's position to its current location
-        if (yOffset != 0) {
+        if (yOffset !== 0) {
             this.currentHole[0] += yOffset;
-        } else if (xOffset != 0) {
+        } else if (xOffset !== 0) {
             this.currentHole[1] += xOffset;
         }
 
@@ -100,27 +100,27 @@ class gameClass {
 
             /// If the move made does not affect the configration of the game, then try again
             /// so hopefully we don't get the same move again.
-            if (this.move(moved, false) == -1) {
+            if (this.move(moved, false) === -1) {
                 i--;
                 continue;
             }
 
             /// The next random array should not undo what the last move did,
             /// so eliminating that possibility
-            if (moved == 3 || moved == 1) {
+            if (moved === 3 || moved === 1) {
                 random = [4, 2, moved];
-            } else if (moved == 2 || moved == 4) {
+            } else if (moved === 2 || moved === 4) {
                 random = [1, 3, moved];
             }
 
             /// If the hole is on the corner, don't make moves that would not change the conifguration at all
-            if (this.currentHole[0] == 0 && this.currentHole[1] == 0) {
+            if (this.currentHole[0] === 0 && this.currentHole[1] === 0) {
                 random = [1, 2];
-            } else if (this.currentHole[0] == 0 && this.currentHole[1] == (this.tileCountTotal - 1)) {
+            } else if (this.currentHole[0] === 0 && this.currentHole[1] === (this.tileCountTotal - 1)) {
                 random = [1, 4];
-            } else if (this.currentHole[1] == 0 && this.currentHole[0] == (this.tileCountTotal - 1)) {
+            } else if (this.currentHole[1] === 0 && this.currentHole[0] === (this.tileCountTotal - 1)) {
                 random = [3, 2];
-            } else if (this.currentHole[1] == (this.tileCountTotal - 1) && this.currentHole[0] == (this.tileCountTotal - 1)) {
+            } else if (this.currentHole[1] === (this.tileCountTotal - 1) && this.currentHole[0] === (this.tileCountTotal - 1)) {
                 random = [3, 4];
             }
 
@@ -139,7 +139,7 @@ class gameClass {
         for (let i = 1; i <= 3; i++) {
             temp.push([]);
             for (let j = 1; j <= 3; j++) {
-                if (this.game[i][j] == 0) {
+                if (this.game[i][j] === 0) {
                     temp[i - 1].push(-1);
                 } else {
                     temp[i - 1].push(this.game[i][j] % 6);
@@ -152,7 +152,7 @@ class gameClass {
     compare(arr1, arr2) {
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
-                if (arr1[i][j] != arr2[i][j]) {
+                if (arr1[i][j] !== arr2[i][j]) {
                     return -1;
                 }
             }
@@ -178,7 +178,7 @@ if(config.heroku){
 }
 let server;
 
-if (config.protocol == "https") {
+if (config.protocol === "https") {
     server = https.createServer({
         key: fs.readFileSync(config.key, 'utf8'),
         cert: fs.readFileSync(config.cert, 'utf8'),
@@ -216,9 +216,9 @@ function getRandomRoomName() {
     }
 
     const s = io.sockets.adapter.rooms.get(rn);
-    if (typeof s == "undefined") {
+    if (typeof s === "undefined") {
         return rn;
-    } else if (s.size == 0) {
+    } else if (s.size === 0) {
         return rn;
     } else {
         console.log(s.size)
@@ -229,7 +229,7 @@ function getRandomRoomName() {
 
 function isActive(socketId) {
     const socket = io.sockets.sockets.get(socketId);
-    return (socket !== undefined && Array.from(socket.rooms).length == 1);
+    return (socket !== undefined && Array.from(socket.rooms).length === 1);
 }
 
 
@@ -240,14 +240,14 @@ function findNextActiveSocket() {
         if (!isActive(temp)) {
             queue.removeElementAtIndex(couple.length);
         } else {
-            if (couple.length == 1 && couple[0] == temp) {
+            if (couple.length === 1 && couple[0] === temp) {
                 queue.removeElementAtIndex(couple.length);
             } else {
                 couple.push(temp);
             }
         }
     }
-    if (couple.length == 2) {
+    if (couple.length === 2) {
         queue.deleteHead();
         queue.deleteHead();
         return couple;
@@ -262,7 +262,7 @@ function findNextActiveSocket() {
 function leaveAllRoom(socket){
     const roomsAll = Array.from(socket.rooms);
     for (let i = 0; i < roomsAll.length; i++) {
-        if (roomsAll[i] == socket.id) { continue; }
+        if (roomsAll[i] === socket.id) { continue; }
         socket.leave(roomsAll[i]);
     }
 }
@@ -283,12 +283,12 @@ function findMatch() {
                     const mem1 = members.indexOf(couple[0]);
                     const mem2 = members.indexOf(couple[1]);
                     console.log(mem1, members, couple);
-                    if (mem1 == -1 && mem2 == -1) {
-                    } else if (mem1 == -1) {
+                    if (mem1 === -1 && mem2 === -1) {
+                    } else if (mem1 === -1) {
                         leaveAllRoom(second);
                         queue.shift(couple[1]);
                         second.emit("queue", "yes");
-                    } else if (mem2 == -1) {
+                    } else if (mem2 === -1) {
                         leaveAllRoom(first);
                         queue.shift(couple[0]);
                         first.emit("queue", "yes");
@@ -306,11 +306,11 @@ function findMatch() {
 
 function cloneArray(array, dimensions) {
     const clonedArray = [];
-    if (dimensions == 1) {
+    if (dimensions === 1) {
         for (let i = 0; i < array.length; i++) {
             clonedArray.push(array[i]);
         }
-    } else if (dimensions == 2) {
+    } else if (dimensions === 2) {
         for (let i = 0; i < array.length; i++) {
             const temp = [];
             for (let j = 0; j < array[i].length; j++) {
@@ -326,7 +326,7 @@ function cloneArray(array, dimensions) {
 function compareArray(array1, array2, dimen1, dimen2) {
     for (let i = 0; i < dimen1; i++) {
         for (let j = 0; j < dimen2; j++) {
-            if (array1[i][j] != array2[i][j]) {
+            if (array1[i][j] !== array2[i][j]) {
                 return -1;
             }
         }
@@ -346,7 +346,7 @@ function onConnection(socket) {
     // Making the user leave the rooms its already in
     const roomsAll = Array.from(socket.rooms);
     for (let i = 0; i < roomsAll.length; i++) {
-        if (roomsAll[i] == socket.id) { continue; }
+        if (roomsAll[i] === socket.id) { continue; }
         socket.leave(roomsAll[i]);
     }
     function joinRoom(data, socket, isQueue = 0) {
@@ -360,30 +360,30 @@ function onConnection(socket) {
         }
         try {
             const roomSize = io.sockets.adapter.rooms.get(data);
-            if (roomSize != undefined && roomSize != null && roomSize.size >= 2) {
+            if (roomSize !== undefined && roomSize !== null && roomSize.size >= 2) {
                 socket.emit("message", "There are already more than 2 people in this room.");
                 return;
             }
 
 
-            if (typeof thisRoom !== "undefined" && thisRoom.inProgress == true) {
+            if (typeof thisRoom !== "undefined" && thisRoom.inProgress === true) {
                 socket.emit("message", "A game is already in progress in this room");
                 return;
             }
 
 
 
-            if (data.length == 6) {
+            if (data.length === 6) {
                 let roomsAll = Array.from(socket.rooms);
                 for (let i = 0; i < roomsAll.length; i++) {
-                    if (roomsAll[i] == socket.id) { continue; }
+                    if (roomsAll[i] === socket.id) { continue; }
                     socket.leave(roomsAll[i]);
                 }
 
                 socket.join(data);
 
                 socket.emit("room", JSON.stringify([isQueue, data]));
-                if (io.sockets.adapter.rooms.get(data).size == 1) {
+                if (io.sockets.adapter.rooms.get(data).size === 1) {
                     socket.emit("messageLog", "Waiting for other player to join this room.");
                 } else {
                     io.in(data).emit("messageLog", "Waiting for both players to get ready.");
@@ -413,7 +413,7 @@ function onConnection(socket) {
 
 
     function checkIfCanRun() {
-        if (thisRoom == null || thisRoom == undefined) {
+        if (thisRoom === null || thisRoom === undefined) {
             return true;
         }
         return false;
@@ -452,14 +452,14 @@ function onConnection(socket) {
             data = JSON.parse(data);
             const members = Array.from(io.sockets.adapter.rooms.get(room_name));
 
-            if ((thisRoom.inProgress == false || isNaN(parseInt(data[0])) || members.length != 2)) {
+            if ((thisRoom.inProgress === false || isNaN(parseInt(data[0])) || members.length !== 2)) {
                 return;
             }
             thisRoom[socket.id].game.move(data[0]);
 
             socket.to(room_name).emit('move', JSON.stringify({ "data": data[0], "type": 0 }));
 
-            if (thisRoom[socket.id].game.compare(thisRoom.game.currentConfig, thisRoom[socket.id].game.storeConfig()) == 1) {
+            if (thisRoom[socket.id].game.compare(thisRoom.game.currentConfig, thisRoom[socket.id].game.storeConfig()) === 1) {
                 thisRoom.inProgress = false;
                 socket.emit("again", 1);
                 socket.to(room_name).emit('again', 0);
@@ -468,20 +468,20 @@ function onConnection(socket) {
 
             let otherId;
 
-            if (members[0] == socket.id) {
+            if (members[0] === socket.id) {
                 otherId = members[1];
             } else {
                 otherId = members[0];
 
             }
 
-            if (compareArray(data[2], thisRoom[socket.id].game.game, 5, 5) == -1) {
+            if (compareArray(data[2], thisRoom[socket.id].game.game, 5, 5) === -1) {
                 socket.emit('reset', JSON.stringify({
                     type: 1,
                     game: thisRoom[socket.id].game.game,
                     gameCurrentHole: thisRoom[socket.id].game.currentHole,
                 }));
-            } else if (compareArray(data[3], thisRoom[otherId].game.game, 5, 5) == -1) {
+            } else if (compareArray(data[3], thisRoom[otherId].game.game, 5, 5) === -1) {
                 socket.emit('reset', JSON.stringify({
                     type: 2,
                     game: thisRoom[otherId].game.game,
@@ -505,7 +505,7 @@ function onConnection(socket) {
 
         try {
             const members = Array.from(io.sockets.adapter.rooms.get(room_name));
-            if (thisRoom.ready.indexOf(socket.id) == -1 && members.length == 2 && thisRoom.inProgress == false) {
+            if (thisRoom.ready.indexOf(socket.id) === -1 && members.length === 2 && thisRoom.inProgress === false) {
                 thisRoom.ready.push(socket.id);
 
                 if (thisRoom.ready.indexOf(members[0]) > -1 && thisRoom.ready.indexOf(members[1]) > -1) {
@@ -569,7 +569,7 @@ function onConnection(socket) {
 
     socket.on('queue', function (data) {
         try {
-            if (queueCheck == 0) {
+            if (queueCheck === 0) {
                 queueCheck = 1;
                 socket.emit("queue", "yes");
                 queueNode = queue.push(socket.id);
@@ -599,9 +599,9 @@ function delete_hist(room) {
 io.of("/").adapter.on("leave-room", (room, id) => {
     try {
 
-        if (room.toString().length == "6") {
+        if (room.toString().length === "6") {
             const s = io.sockets.adapter.rooms.get(room);
-            if ((typeof s == "undefined" || s.size == 0)) {
+            if ((typeof s === "undefined" || s.size === 0)) {
                 delete_hist(room);
             } else {
                 io.in(room).emit('messageLog', 'The other player has left the room.');
