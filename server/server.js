@@ -10,7 +10,7 @@ const config = require('./config.json');
 
 console.log(config);
 
-var queue = new LinkedList();
+let queue = new LinkedList();
 
 class gameClass {
     constructor(gameDiv, config) {
@@ -21,9 +21,9 @@ class gameClass {
         this.canMove = false;
 
         /// Setting up the initial game-array
-        for (var i = 0; i < this.tileCountTotal; i++) {
+        for (let i = 0; i < this.tileCountTotal; i++) {
             this.game.push([]);
-            for (var j = 0; j < this.tileCountTotal; j++) {
+            for (let j = 0; j < this.tileCountTotal; j++) {
                 this.game[this.game.length - 1][j] = i * this.tileCountTotal + j + 1;
             }
         }
@@ -89,13 +89,13 @@ class gameClass {
         /// The initial state of the game is determined by moving the tiles from the
         /// original configuration; this will ensure that it is always possible for the user
         /// to use legal moves to go back to the original configuration to win the game
-        var times = Math.floor(Math.random() * 20) + 200;
+        let times = Math.floor(Math.random() * 20) + 200;
 
         /// As the hole is initially at the bottom left, the first moves should be top or left
-        var random = [1, 2, 3, 4];
-        for (var i = 0; i < times; i++) {
+        let random = [1, 2, 3, 4];
+        for (let i = 0; i < times; i++) {
             /// Choosing a random move to make
-            var last = (Math.floor(Math.random() * 100)) % (random.length);
+            let last = (Math.floor(Math.random() * 100)) % (random.length);
             let moved = random[last];
 
             /// If the move made does not affect the configration of the game, then try again
@@ -126,7 +126,7 @@ class gameClass {
 
         }
 
-        for (var i = 0; i < 5; i++) {
+        for (let i = 0; i < 5; i++) {
             this.move(2, false);
             this.move(1, false);
 
@@ -136,9 +136,9 @@ class gameClass {
     storeConfig() {
         let temp = [];
 
-        for (var i = 1; i <= 3; i++) {
+        for (let i = 1; i <= 3; i++) {
             temp.push([]);
-            for (var j = 1; j <= 3; j++) {
+            for (let j = 1; j <= 3; j++) {
                 if (this.game[i][j] == 0) {
                     temp[i - 1].push(-1);
                 } else {
@@ -150,8 +150,8 @@ class gameClass {
     }
 
     compare(arr1, arr2) {
-        for (var i = 0; i < 3; i++) {
-            for (var j = 0; j < 3; j++) {
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
                 if (arr1[i][j] != arr2[i][j]) {
                     return -1;
                 }
@@ -176,7 +176,7 @@ class gameClass {
 if(config.heroku){
     app.use('/', express.static('client'));
 }
-var server;
+let server;
 
 if (config.protocol == "https") {
     server = https.createServer({
@@ -197,7 +197,7 @@ const io = require("socket.io")(server, {
 });
 const port = config.webSocketPort;
 
-var data_m = {};
+let data_m = {};
 let currentRoom = 0;
 
 function randomRange(min, max) {
@@ -262,7 +262,7 @@ function findNextActiveSocket() {
 
 function leaveAllRoom(socket){
     let roomsAll = Array.from(socket.rooms);
-    for (var i = 0; i < roomsAll.length; i++) {
+    for (let i = 0; i < roomsAll.length; i++) {
         if (roomsAll[i] == socket.id) { continue; }
         socket.leave(roomsAll[i]);
     }
@@ -308,13 +308,13 @@ function findMatch() {
 function cloneArray(array, dimensions) {
     let clonedArray = [];
     if (dimensions == 1) {
-        for (var i = 0; i < array.length; i++) {
+        for (let i = 0; i < array.length; i++) {
             clonedArray.push(array[i]);
         }
     } else if (dimensions == 2) {
-        for (var i = 0; i < array.length; i++) {
+        for (let i = 0; i < array.length; i++) {
             let temp = [];
-            for (var j = 0; j < array[i].length; j++) {
+            for (let j = 0; j < array[i].length; j++) {
                 temp.push(array[i][j]);
             }
             clonedArray.push(temp);
@@ -325,8 +325,8 @@ function cloneArray(array, dimensions) {
 }
 
 function compareArray(array1, array2, dimen1, dimen2) {
-    for (var i = 0; i < dimen1; i++) {
-        for (var j = 0; j < dimen2; j++) {
+    for (let i = 0; i < dimen1; i++) {
+        for (let j = 0; j < dimen2; j++) {
             if (array1[i][j] != array2[i][j]) {
                 return -1;
             }
@@ -346,7 +346,7 @@ function onConnection(socket) {
     let lastRoom;
     // Making the user leave the rooms its already in
     let roomsAll = Array.from(socket.rooms);
-    for (var i = 0; i < roomsAll.length; i++) {
+    for (let i = 0; i < roomsAll.length; i++) {
         if (roomsAll[i] == socket.id) { continue; }
         socket.leave(roomsAll[i]);
     }
@@ -376,7 +376,7 @@ function onConnection(socket) {
 
             if (data.length == 6) {
                 let roomsAll = Array.from(socket.rooms);
-                for (var i = 0; i < roomsAll.length; i++) {
+                for (let i = 0; i < roomsAll.length; i++) {
                     if (roomsAll[i] == socket.id) { continue; }
                     socket.leave(roomsAll[i]);
                 }
