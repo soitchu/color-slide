@@ -131,6 +131,7 @@
     width: 100%;
     position: absolute;
     top: 0;
+    overflow-y: auto;
     left: 0;
     justify-content: center;
     align-items: center;
@@ -248,6 +249,7 @@ box-shadow:inset 0 -0.6em 0 -0.35em rgba(0,0,0,0);
     padding: 10px;
     position:absolute;
     top: 0;
+    z-index: 2;
     background-color: white;
     left: 50%;
     transform: translateX(-50%);
@@ -264,8 +266,21 @@ box-shadow:inset 0 -0.6em 0 -0.35em rgba(0,0,0,0);
         display: none;
     }
 
+    #hostGame{
+        width:100%;
+        height: auto;
+        min-height: 250px;
+    }
+
+    #joinGame{
+        width: 100%;
+        height: auto;
+        min-height: 250px;
+
+
+    }
     .menu{
-        flex-direction: column;
+        flex-wrap: wrap;
     }
 
     #line{
