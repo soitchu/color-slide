@@ -291,16 +291,10 @@ function findMatch() {
 function cloneArray(array, dimensions) {
     const clonedArray = [];
     if (dimensions === 1) {
-        for (let i = 0; i < array.length; i++) {
-            clonedArray.push(array[i]);
-        }
+        clonedArray.push(...array)
     } else if (dimensions === 2) {
         for (let i = 0; i < array.length; i++) {
-            const temp = [];
-            for (let j = 0; j < array[i].length; j++) {
-                temp.push(array[i][j]);
-            }
-            clonedArray.push(temp);
+            clonedArray.push([...array[i]]);
         }
     }
 
