@@ -254,7 +254,7 @@ function findMatch() {
             const room = getRandomRoomName();
             first.emit("joinThis", room);
             second.emit("joinThis", room);
-            setTimeout(function () {
+            setTimeout(() => {
                 try {
                     const members = Array.from(io.sockets.adapter.rooms.get(room.toString()));
                     const mem1 = members.indexOf(couple[0]);
@@ -390,7 +390,7 @@ function onConnection(socket) {
         return false;
     }
 
-    socket.on('createroom', function (data) {
+    socket.on('createroom', (data) => {
 
         try {
             data = getRandomRoomName().toString();
@@ -400,7 +400,7 @@ function onConnection(socket) {
         }
     });
 
-    socket.on('ping', function (data) {
+    socket.on('ping', (data) => {
         const roomsAll1 = Array.from(socket.rooms);
         if (roomsAll1.length > 1) {
             socket.emit('ping', roomsAll1[1]);
@@ -409,7 +409,7 @@ function onConnection(socket) {
         }
     });
 
-    socket.on('move', function (data) {
+    socket.on('move', (data) => {
         try {
             if (checkIfCanRun()) {
                 return;
@@ -450,7 +450,7 @@ function onConnection(socket) {
         }
     });
 
-    socket.on('ready', function (data) {
+    socket.on('ready', (data) => {
         if (checkIfCanRun()) {
             return;
         }
@@ -481,7 +481,7 @@ function onConnection(socket) {
                     otherPlayer.game.game = cloneArray(data_m[room_name].game.game, 2);
                     otherPlayer.game.currentHole = cloneArray(data_m[room_name].game.currentHole, 1);
 
-                    setTimeout(function () {
+                    setTimeout(() => {
                         thisRoom.ready = [];
                         thisRoom.inProgress = true;
                         io.in(room_name).emit("changeConfig", JSON.stringify({ currentHole: data_m[room_name].game.currentHole, game: data_m[room_name].game.game, preview: data_m[room_name].game.currentConfig }));
@@ -502,7 +502,7 @@ function onConnection(socket) {
         }
     });
 
-    socket.on('changeroom', function (data) {
+    socket.on('changeroom', (data) => {
         try {
             data = JSON.parse(data);
             console.log(data);
@@ -513,7 +513,7 @@ function onConnection(socket) {
         }
     });
 
-    socket.on('queue', function (data) {
+    socket.on('queue', (data) => {
         try {
             if (queueCheck === 0) {
                 queueCheck = 1;
@@ -525,7 +525,7 @@ function onConnection(socket) {
         }
     });
 
-    socket.on('disconnect', function () {
+    socket.on('disconnect', () => {
         if (queueNode !== null) {
             queue.removeElement(queueNode);
         }
@@ -555,7 +555,7 @@ io.of("/").adapter.on("leave-room", (room, id) => {
     }
 });
 
-setInterval(function () {
+setInterval(() => {
     findMatch();
 }, 1000);
 
