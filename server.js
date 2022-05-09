@@ -1,147 +1,136 @@
-const express = require('express');
-const fs = require('fs');
+const express = require("express");
+const fs = require("fs");
 const app = express();
-const http = require('http');
-const https = require('https');
-let LinkedList = require('./linkedList.js');
-var config;
+const http = require("http");
+const https = require("https");
+const LinkedList = require("./linkedList.js");
+const config = require("./config.json");
 
 
 
-config = JSON.parse(fs.readFileSync('config.json'));
 console.log(config);
 
-var queue = new LinkedList();
+const queue = new LinkedList();
 
 class gameClass {
-    constructor(gameDiv, config) {
-
-        this.tileCountTotal = 5;
+    constructor(config = 5) {
+        this.tileCountTotal = config;
         this.game = [];
         this.colors = ["#000000", "#ffffff", "#b83030", "#0b1470", "#b5c229", "#b04272"];
         this.canMove = false;
 
         /// Setting up the initial game-array
-        for (var i = 0; i < this.tileCountTotal; i++) {
+        for (let i = 0; i < this.tileCountTotal; i++) {
             this.game.push([]);
-            for (var j = 0; j < this.tileCountTotal; j++) {
+            for (let j = 0; j < this.tileCountTotal; j++) {
                 this.game[this.game.length - 1][j] = i * this.tileCountTotal + j + 1;
             }
         }
 
-        /// The hole's position is represented by a '0' and it's location is on the bottom-right
+        /// The hole's position is represented by a "0" and it's location is on the bottom-right
         this.game[this.tileCountTotal - 1][this.tileCountTotal - 1] = 0;
         this.currentHole = [this.tileCountTotal - 1, this.tileCountTotal - 1];
     }
 
-
-
-
-    move(dir, wonAlert = true) {
-        let xOffset = 0, yOffset = 0;
-
-        /// dir 3 : top
-        /// dir 1 : bottom
+    move(dir) {
+        /// dir 3 : up
+        /// dir 1 : down
         /// dir 4 : left
         /// dir 2 : right
 
-        if (dir == 3) {
-            yOffset = -1;
-        } else if (dir == 1) {
-            yOffset = 1;
-        } else if (dir == 4) {
-            xOffset = -1;
-        } else if (dir == 2) {
-            xOffset = 1;
-        }
+        // NOTE: This could be simplified (removing the *-1) if the meanings of
+        //       the dir numbers were swapped with their counterpart (i.e. 3 with 1, 4 with 2)
+        // Adding 0 gets rid of -0 from the results, for simplicity
+        const xOffset = (dir - 3) % 2 * -1 + 0
+        const yOffset = (dir - 2) % 2 * -1 + 0;
 
-
-        if ((this.currentHole[0] + yOffset) >= (this.tileCountTotal) || (this.currentHole[1] + xOffset) >= (this.tileCountTotal) || (this.currentHole[1] + xOffset) < 0 || (this.currentHole[0] + yOffset) < 0) {
-            return -1;
-        }
+        /*
+            dir 1: [ 0, 1 ]
+            dir 2: [ 1, 0 ]
+            dir 3: [ 0, -1 ]
+            dir 4: [ -1, 0 ]
+        */
 
         /// Getting the coordinates of the hole adjacent, which is determined by the variable 'dir'
-        let holeAbove = [this.currentHole[0] + yOffset, this.currentHole[1] + xOffset];
+        const holeAbove = [this.currentHole[0] + yOffset, this.currentHole[1] + xOffset];
 
-
-
-
+        for(const coordinate of holeAbove) {
+            if(coordinate >= this.tileCountTotal || coordinate < 0) {
+                return -1
+            }
+        }
 
         /// Swapping the numbers in the main game array
-        let tempNum = this.game[holeAbove[0]][holeAbove[1]];
+        const tempNum = this.game[holeAbove[0]][holeAbove[1]];
         this.game[holeAbove[0]][holeAbove[1]] = this.game[this.currentHole[0]][this.currentHole[1]];
         this.game[this.currentHole[0]][this.currentHole[1]] = tempNum;
 
         /// Changing the hole's position to its current location
-        if (yOffset != 0) {
+        if (yOffset) {
             this.currentHole[0] += yOffset;
-        } else if (xOffset != 0) {
+        } else if (xOffset) {
             this.currentHole[1] += xOffset;
         }
-
-
-
-
-
-
     }
 
     randomise() {
-        /// The initial state of the game is determined by moving the tiles from the 
+        /// The initial state of the game is determined by moving the tiles from the
         /// original configuration; this will ensure that it is always possible for the user
         /// to use legal moves to go back to the original configuration to win the game
-        var times = Math.floor(Math.random() * 20) + 200;
-        var last = 0;
+        const times = randomRange(220, 200);
 
+        // FIXME: It should be possible to use a constant time set of operations to determine
+        //        the fixed array of legal moves, and then you don't have to hope for good moves
         /// As the hole is initially at the bottom left, the first moves should be top or left
-        var random = [1, 2, 3, 4];
-        for (var i = 0; i < times; i++) {
+        let random = [1, 2, 3, 4];
+        for (let i = 0; i < times; i++) {
             /// Choosing a random move to make
-            var last = (Math.floor(Math.random() * 100)) % (random.length);
-            let moved = random[last];
+            const last = randomRange(100) % random.length;
+            const moved = random[last];
 
-            /// If the move made does not affect the configration of the game, then try again 
-            /// so hopefully we don't get the same move again. 
-            if (this.move(moved, false) == -1) {
+            /// If the move made does not affect the configration of the game, then try again
+            /// so hopefully we don't get the same move again.
+            if (this.move(moved) === -1) {
                 i--;
                 continue;
             }
 
+            // FIXME: Why? I'm curious the reason for this limitation; I don't see
+            //        anything wrong with a move that in essence reverts the position.
+            //        I feel like if anything, this would limit the entropy further
             /// The next random array should not undo what the last move did,
             /// so eliminating that possibility
-            if (moved == 3 || moved == 1) {
+            if (moved === 3 || moved === 1) {
                 random = [4, 2, moved];
-            } else if (moved == 2 || moved == 4) {
+            } else if (moved === 2 || moved === 4) {
                 random = [1, 3, moved];
             }
 
             /// If the hole is on the corner, don't make moves that would not change the conifguration at all
-            if (this.currentHole[0] == 0 && this.currentHole[1] == 0) {
+            if (this.currentHole[0] === 0 && this.currentHole[1] === 0) {
                 random = [1, 2];
-            } else if (this.currentHole[0] == 0 && this.currentHole[1] == (this.tileCountTotal - 1)) {
+            } else if (this.currentHole[0] === 0 && this.currentHole[1] === (this.tileCountTotal - 1)) {
                 random = [1, 4];
-            } else if (this.currentHole[1] == 0 && this.currentHole[0] == (this.tileCountTotal - 1)) {
+            } else if (this.currentHole[1] === 0 && this.currentHole[0] === (this.tileCountTotal - 1)) {
                 random = [3, 2];
-            } else if (this.currentHole[1] == (this.tileCountTotal - 1) && this.currentHole[0] == (this.tileCountTotal - 1)) {
+            } else if (this.currentHole[1] === (this.tileCountTotal - 1) && this.currentHole[0] === (this.tileCountTotal - 1)) {
                 random = [3, 4];
             }
-
         }
 
-        for (var i = 0; i < 5; i++) {
-            this.move(2, false);
-            this.move(1, false);
-
+        for (let i = 0; i < 5; i++) {
+            this.move(2);
+            this.move(1);
         }
-
     }
-    storeConfig() {
-        let temp = [];
 
-        for (var i = 1; i <= 3; i++) {
+    storeConfig() {
+        const temp = [];
+
+        for (let i = 1; i <= 3; i++) {
             temp.push([]);
-            for (var j = 1; j <= 3; j++) {
-                if (this.game[i][j] == 0) {
+            for (let j = 1; j <= 3; j++) {
+                if (this.game[i][j] === 0) {
                     temp[i - 1].push(-1);
                 } else {
                     temp[i - 1].push(this.game[i][j] % 6);
@@ -152,39 +141,34 @@ class gameClass {
     }
 
     compare(arr1, arr2) {
-        for (var i = 0; i < 3; i++) {
-            for (var j = 0; j < 3; j++) {
-                if (arr1[i][j] != arr2[i][j]) {
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                if (arr1[i][j] !== arr2[i][j]) {
                     return -1;
                 }
             }
         }
         return 1;
     }
+
     initialise() {
-
-
         this.randomise();
         this.currentConfig = this.storeConfig();
         this.randomise();
-
-
     }
-
-
 };
 
-
-if(config.heroku){
-    app.use('/', express.static('client'));
+if(config.heroku) {
+    app.use("/", express.static("client"));
 }
-var server;
 
-if (config.protocol == "https") {
+let server;
+if (config.protocol === "https") {
+    const { key, cert, ca } = config
     server = https.createServer({
-        key: fs.readFileSync(config.key, 'utf8'),
-        cert: fs.readFileSync(config.cert, 'utf8'),
-        ca: fs.readFileSync(config.ca, 'utf8')
+        key,
+        cert,
+        ca,
     }, app);
 } else {
     server = http.createServer(app);
@@ -199,28 +183,29 @@ const io = require("socket.io")(server, {
 });
 const port = config.webSocketPort;
 
-var data_m = {};
+const data_m = {};
 let currentRoom = 0;
 
-function randomRange(min, max) {
+function randomRange(max, min = 0) {
     return Math.floor(Math.random() * (max - min) + min);
 }
+
 /*
     Changed the previous function to get random room numbers
     But this still does not seem that efficient/secure, so I plan on
     changing it later on
 */
 function getRandomRoomName() {
-    let rn = (100 + randomRange(0, 899)) * 1000 + currentRoom;
+    const rn = randomRange(999, 100) * 1000 + currentRoom;
     currentRoom++;
     if (currentRoom > 999) {
         currentRoom = 0;
     }
 
-    let s = io.sockets.adapter.rooms.get(rn);
-    if (typeof s == "undefined") {
+    const s = io.sockets.adapter.rooms.get(rn);
+    if (typeof s === "undefined") {
         return rn;
-    } else if (s.size == 0) {
+    } else if (s.size === 0) {
         return rn;
     } else {
         console.log(s.size)
@@ -230,106 +215,86 @@ function getRandomRoomName() {
 }
 
 function isActive(socketId) {
-    let socket = io.sockets.sockets.get(socketId);
-    return (socket !== undefined && Array.from(socket.rooms).length == 1);
+    const socket = io.sockets.sockets.get(socketId);
+    return (socket !== undefined && Array.from(socket.rooms).length === 1);
 }
 
-
 function findNextActiveSocket() {
-    let i = 0;
-    let couple = [];
+    const couple = [];
     while (queue.length > 1 && couple.length < 2) {
-        let temp = queue.value(couple.length);
+        const temp = queue.value(couple.length);
         if (!isActive(temp)) {
             queue.removeElementAtIndex(couple.length);
         } else {
-            if (couple.length == 1 && couple[0] == temp) {
+            if (couple.length === 1 && couple[0] === temp) {
                 queue.removeElementAtIndex(couple.length);
             } else {
                 couple.push(temp);
             }
         }
     }
-    if (couple.length == 2) {
+    if (couple.length === 2) {
         queue.deleteHead();
         queue.deleteHead();
         return couple;
     } else {
         return false;
     }
-
-
 }
 
-
-function leaveAllRoom(socket){
-    let roomsAll = Array.from(socket.rooms);
-    for (var i = 0; i < roomsAll.length; i++) {
-        if (roomsAll[i] == socket.id) { continue; }
+function leaveAllRoom(socket) {
+    const roomsAll = Array.from(socket.rooms);
+    for (let i = 0; i < roomsAll.length; i++) {
+        if (roomsAll[i] === socket.id) { continue; }
         socket.leave(roomsAll[i]);
     }
 }
+
 function findMatch() {
     while (true) {
-        let couple = findNextActiveSocket();
-        let first = io.sockets.sockets.get(couple[0]);
-        let second = io.sockets.sockets.get(couple[1]);
+        const couple = findNextActiveSocket();
+        const first = io.sockets.sockets.get(couple[0]);
+        const second = io.sockets.sockets.get(couple[1]);
         if (couple === false) {
             break;
         } else {
-            let room = getRandomRoomName();
+            const room = getRandomRoomName();
             first.emit("joinThis", room);
             second.emit("joinThis", room);
-            setTimeout(function () {
-                try{
-                    let members = Array.from(io.sockets.adapter.rooms.get(room.toString()));
-                    let mem1 = members.indexOf(couple[0]);
-                    let mem2 = members.indexOf(couple[1]);
+            setTimeout(() => {
+                try {
+                    const members = Array.from(io.sockets.adapter.rooms.get(room.toString()));
+                    const mem1 = members.includes(couple[0]);
+                    const mem2 = members.includes(couple[1]);
                     console.log(mem1, members, couple);
-                    if (mem1 == -1 && mem2 == -1) {
-                    } else if (mem1 == -1) {
+                    if (!mem1 && !mem2) {
+                    } else if (!mem1) {
                         leaveAllRoom(second);
                         queue.shift(couple[1]);
                         second.emit("queue", "yes");
-                    } else if (mem2 == -1) {
+                    } else if (!mem2) {
                         leaveAllRoom(first);
                         queue.shift(couple[0]);
                         first.emit("queue", "yes");
-                    }else{
+                    } else {
                         first.emit("show", 1);
                         second.emit("show", 1);
                     }
-                }catch(err){
-                    console.log(err);
+                } catch (err) {
+                    console.error(err);
                 }
             }, 1000);
         }
     }
 }
 
-function cloneArray(array, dimensions) {
-    let clonedArray = [];
-    if (dimensions == 1) {
-        for (var i = 0; i < array.length; i++) {
-            clonedArray.push(array[i]);
-        }
-    } else if (dimensions == 2) {
-        for (var i = 0; i < array.length; i++) {
-            let temp = [];
-            for (var j = 0; j < array[i].length; j++) {
-                temp.push(array[i][j]);
-            }
-            clonedArray.push(temp);
-        }
-    }
-
-    return clonedArray;
-}
+const cloneArray = (array) =>
+    array.map(element => element instanceof Array ? cloneArray(element) : element);
 
 function compareArray(array1, array2, dimen1, dimen2) {
-    for (var i = 0; i < dimen1; i++) {
-        for (var j = 0; j < dimen2; j++) {
-            if (array1[i][j] != array2[i][j]) {
+    for (let i = 0; i < dimen1; i++) {
+        for (let j = 0; j < dimen2; j++) {
+            if (array1[i][j] !== array2[i][j]) {
                 return -1;
             }
         }
@@ -338,8 +303,6 @@ function compareArray(array1, array2, dimen1, dimen2) {
     return 1;
 }
 
-
-
 function onConnection(socket) {
     let room_name;
     let thisRoom;
@@ -347,13 +310,14 @@ function onConnection(socket) {
     let queueNode = null;
     let lastRoom;
     // Making the user leave the rooms its already in
-    let roomsAll = Array.from(socket.rooms);
-    for (var i = 0; i < roomsAll.length; i++) {
-        if (roomsAll[i] == socket.id) { continue; }
+    const roomsAll = Array.from(socket.rooms);
+    for (let i = 0; i < roomsAll.length; i++) {
+        if (roomsAll[i] === socket.id) { continue; }
         socket.leave(roomsAll[i]);
     }
+
     function joinRoom(data, socket, isQueue = 0) {
-        if(Date.now() - lastRoom  < 1000){
+        if(Date.now() - lastRoom < 1000) {
             return;
         }
         lastRoom = Date.now();
@@ -362,36 +326,32 @@ function onConnection(socket) {
             queue.removeElement(queueNode);
         }
         try {
-            let roomSize = io.sockets.adapter.rooms.get(data);
-            if (roomSize != undefined && roomSize != null && roomSize.size >= 2) {
+            const roomSize = io.sockets.adapter.rooms.get(data);
+            if (roomSize !== undefined && roomSize !== null && roomSize.size >= 2) {
                 socket.emit("message", "There are already more than 2 people in this room.");
                 return;
             }
 
-
-            if (typeof thisRoom !== "undefined" && thisRoom.inProgress == true) {
+            if (typeof thisRoom !== "undefined" && thisRoom.inProgress === true) {
                 socket.emit("message", "A game is already in progress in this room");
                 return;
             }
 
-
-
-            if (data.length == 6) {
+            if (data.length === 6) {
                 let roomsAll = Array.from(socket.rooms);
-                for (var i = 0; i < roomsAll.length; i++) {
-                    if (roomsAll[i] == socket.id) { continue; }
+                for (let i = 0; i < roomsAll.length; i++) {
+                    if (roomsAll[i] === socket.id) { continue; }
                     socket.leave(roomsAll[i]);
                 }
 
                 socket.join(data);
-                
+
                 socket.emit("room", JSON.stringify([isQueue, data]));
-                if (io.sockets.adapter.rooms.get(data).size == 1) {
+                if (io.sockets.adapter.rooms.get(data).size === 1) {
                     socket.emit("messageLog", "Waiting for other player to join this room.");
                 } else {
                     io.in(data).emit("messageLog", "Waiting for both players to get ready.");
                 }
-
 
                 room_name = data;
                 thisRoom = data_m[room_name];
@@ -410,109 +370,91 @@ function onConnection(socket) {
 
             }
         } catch (err) {
-            console.log(err);
+            console.error(err);
         }
     }
 
-
     function checkIfCanRun() {
-        if (thisRoom == null || thisRoom == undefined) {
+        if (thisRoom === null || thisRoom === undefined) {
             return true;
         }
         return false;
     }
 
-
-
-    socket.on('createroom', function (data) {
+    socket.on("createroom", (data) => {
 
         try {
             data = getRandomRoomName().toString();
             joinRoom(data, socket);
         } catch (err) {
-            console.log(err);
+            console.error(err);
         }
     });
 
-
-    socket.on('ping', function (data) {
-        let roomsAll1 = Array.from(socket.rooms);
+    socket.on("ping", (data) => {
+        const roomsAll1 = Array.from(socket.rooms);
         if (roomsAll1.length > 1) {
-            socket.emit('ping', roomsAll1[1]);
+            socket.emit("ping", roomsAll1[1]);
         } else {
-            socket.emit('ping', -1);
+            socket.emit("ping", -1);
         }
     });
 
-
-    socket.on('move', function (data) {
-
+    socket.on("move", (data) => {
         try {
-
             if (checkIfCanRun()) {
                 return;
             }
             data = JSON.parse(data);
-            let members = Array.from(io.sockets.adapter.rooms.get(room_name));
+            const members = Array.from(io.sockets.adapter.rooms.get(room_name));
 
-            if ((thisRoom.inProgress == false || isNaN(parseInt(data[0])) || members.length != 2)) {
+            if ((thisRoom.inProgress === false || isNaN(parseInt(data[0])) || members.length !== 2)) {
                 return;
             }
             thisRoom[socket.id].game.move(data[0]);
 
-            socket.to(room_name).emit('move', JSON.stringify({ "data": data[0], "type": 0 }));
+            socket.to(room_name).emit("move", JSON.stringify({
+                type: 0,
+                data: data[0],
+            }));
 
-            if (thisRoom[socket.id].game.compare(thisRoom.game.currentConfig, thisRoom[socket.id].game.storeConfig()) == 1) {
+            if (thisRoom[socket.id].game.compare(thisRoom.game.currentConfig, thisRoom[socket.id].game.storeConfig()) === 1) {
                 thisRoom.inProgress = false;
                 socket.emit("again", 1);
-                socket.to(room_name).emit('again', 0);
-
+                socket.to(room_name).emit("again", 0);
             }
 
-            let otherId;
+            const otherId = (members[0] === socket.id) ? members[1] : members[0];
 
-            if (members[0] == socket.id) {
-                otherId = members[1];
-            } else {
-                otherId = members[0];
-
-            }
-
-            if (compareArray(data[2], thisRoom[socket.id].game.game, 5, 5) == -1) {
-                socket.emit('reset', JSON.stringify({
+            if (compareArray(data[2], thisRoom[socket.id].game.game, 5, 5) === -1) {
+                socket.emit("reset", JSON.stringify({
                     type: 1,
                     game: thisRoom[socket.id].game.game,
                     gameCurrentHole: thisRoom[socket.id].game.currentHole,
                 }));
-            } else if (compareArray(data[3], thisRoom[otherId].game.game, 5, 5) == -1) {
-                socket.emit('reset', JSON.stringify({
+            } else if (compareArray(data[3], thisRoom[otherId].game.game, 5, 5) === -1) {
+                socket.emit("reset", JSON.stringify({
                     type: 2,
                     game: thisRoom[otherId].game.game,
                     gameCurrentHole: thisRoom[otherId].game.currentHole,
                 }));
             }
-
-
-
         } catch (err) {
-            console.log(err);
+            console.error(err);
         }
-
     });
 
-    socket.on('ready', function (data) {
-
+    socket.on("ready", () => {
         if (checkIfCanRun()) {
             return;
         }
 
         try {
-            let members = Array.from(io.sockets.adapter.rooms.get(room_name));
-            if (thisRoom.ready.indexOf(socket.id) == -1 && members.length == 2 && thisRoom.inProgress == false) {
+            const members = Array.from(io.sockets.adapter.rooms.get(room_name));
+            if (!thisRoom.ready.includes(socket.id) && members.length === 2 && thisRoom.inProgress === false) {
                 thisRoom.ready.push(socket.id);
 
-                if (thisRoom.ready.indexOf(members[0]) > -1 && thisRoom.ready.indexOf(members[1]) > -1) {
-
+                if (thisRoom.ready.includes(members[0]) && thisRoom.ready.includes(members[1])) {
                     io.in(room_name).emit("start", 1);
                     thisRoom.readyOnce = true;
 
@@ -524,73 +466,72 @@ function onConnection(socket) {
                     thisRoom[members[0]] = {};
                     thisPlayer = thisRoom[members[0]];
                     thisPlayer.game = new gameClass(5);
-                    thisPlayer.game.game = cloneArray(data_m[room_name].game.game, 2);
-                    thisPlayer.game.currentHole = cloneArray(data_m[room_name].game.currentHole, 1);
-
+                    thisPlayer.game.game = cloneArray(data_m[room_name].game.game);
+                    thisPlayer.game.currentHole = cloneArray(data_m[room_name].game.currentHole);
 
                     thisRoom[members[1]] = {};
                     otherPlayer = thisRoom[members[1]];
                     otherPlayer.game = new gameClass(5);
-                    otherPlayer.game.game = cloneArray(data_m[room_name].game.game, 2);
-                    otherPlayer.game.currentHole = cloneArray(data_m[room_name].game.currentHole, 1);
+                    otherPlayer.game.game = cloneArray(data_m[room_name].game.game);
+                    otherPlayer.game.currentHole = cloneArray(data_m[room_name].game.currentHole);
 
-                    setTimeout(function () {
+                    setTimeout(() => {
                         thisRoom.ready = [];
-
                         thisRoom.inProgress = true;
-                        io.in(room_name).emit("changeConfig", JSON.stringify({ currentHole: data_m[room_name].game.currentHole, game: data_m[room_name].game.game, preview: data_m[room_name].game.currentConfig }));
+                        const { currentHole, game, currentConfig: preview } = data_m[room_name].game
+                        io.in(room_name).emit("changeConfig", JSON.stringify({
+                            currentHole,
+                            game,
+                            preview,
+                        }));
                     }, 3000);
-
                 } else {
                     if (thisRoom.readyOnce) {
-                        socket.to(room_name).emit('messageLog', 'The other person wants to play again. Press ready to play again.');
-                        socket.emit('messageLog', 'Waiting for the other player to get ready.');
+                        socket.to(room_name).emit("messageLog", "The other person wants to play again. Press ready to play again.");
+                        socket.emit("messageLog", "Waiting for the other player to get ready.");
                         console.log(thisRoom.ready);
                     } else {
-                        socket.to(room_name).emit('messageLog', 'Waiting for you to get ready.');
-                        socket.emit('messageLog', 'Waiting for the other player to get ready.');
+                        socket.to(room_name).emit("messageLog", "Waiting for you to get ready.");
+                        socket.emit("messageLog", "Waiting for the other player to get ready.");
                     }
                 }
             }
         } catch (err) {
-            console.log(err);
+            console.error(err);
         }
     });
 
-
-
-    socket.on('changeroom', function (data) {
+    socket.on("changeroom", (data) => {
         try {
             data = JSON.parse(data);
             console.log(data);
-            let roomNum = data[1].toString();
+            const roomNum = data[1].toString();
             joinRoom(roomNum, socket, data[0]);
         } catch (err) {
-            console.log(err);
+            console.error(err);
         }
     });
 
-    socket.on('queue', function (data) {
+    socket.on("queue", () => {
         try {
-            if (queueCheck == 0) {
+            if (queueCheck === 0) {
                 queueCheck = 1;
                 socket.emit("queue", "yes");
                 queueNode = queue.push(socket.id);
             }
         } catch (err) {
-            console.log(err);
+            console.error(err);
         }
     });
 
-    socket.on('disconnect', function () {
+    socket.on("disconnect", () => {
         if (queueNode !== null) {
             queue.removeElement(queueNode);
         }
-
     });
 
 }
-io.on('connection', onConnection);
+io.on("connection", onConnection);
 
 function delete_hist(room) {
     if (typeof data_m[room] !== "undefined") {
@@ -598,31 +539,21 @@ function delete_hist(room) {
     }
 }
 
-
-io.of("/").adapter.on("leave-room", (room, id) => {
+io.of("/").adapter.on("leave-room", (room) => {
     try {
-
-        if (room.toString().length == "6") {
-            let s = io.sockets.adapter.rooms.get(room);
-            if ((typeof s == "undefined" || s.size == 0)) {
+        if (room.toString().length === "6") {
+            const s = io.sockets.adapter.rooms.get(room);
+            if ((typeof s === "undefined" || s.size === 0)) {
                 delete_hist(room);
             } else {
-                io.in(room).emit('messageLog', 'The other player has left the room.');
+                io.in(room).emit("messageLog", "The other player has left the room.");
             }
         }
     } catch (err) {
-        console.log(err);
+        console.error(err);
     }
 });
 
+setInterval(findMatch, 1000);
 
-
-setInterval(function () {
-    findMatch();
-}, 1000);
-
-server.listen((process.env.PORT || port), () => console.log('listening on port ' + port));
-
-
-
-
+server.listen((process.env.PORT || port), () => console.log(`listening on port ${port}`));

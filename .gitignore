@@ -1,1 +1,5 @@
 node_modules/
+# VSCode editor config folder
+.vscode
+# Mac computers will generate this file the first time you open a given directory in Finder
+.DS_Store
