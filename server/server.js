@@ -3,12 +3,11 @@ const fs = require('fs');
 const app = express();
 const http = require('http');
 const https = require('https');
-let LinkedList = require('./linkedList.js');
-var config;
+const LinkedList = require('./linkedList.js');
+const config = require('./config.json');
 
 
 
-config = JSON.parse(fs.readFileSync('config.json'));
 console.log(config);
 
 var queue = new LinkedList();
@@ -87,7 +86,7 @@ class gameClass {
     }
 
     randomise() {
-        /// The initial state of the game is determined by moving the tiles from the 
+        /// The initial state of the game is determined by moving the tiles from the
         /// original configuration; this will ensure that it is always possible for the user
         /// to use legal moves to go back to the original configuration to win the game
         var times = Math.floor(Math.random() * 20) + 200;
@@ -100,8 +99,8 @@ class gameClass {
             var last = (Math.floor(Math.random() * 100)) % (random.length);
             let moved = random[last];
 
-            /// If the move made does not affect the configration of the game, then try again 
-            /// so hopefully we don't get the same move again. 
+            /// If the move made does not affect the configration of the game, then try again
+            /// so hopefully we don't get the same move again.
             if (this.move(moved, false) == -1) {
                 i--;
                 continue;
@@ -384,7 +383,7 @@ function onConnection(socket) {
                 }
 
                 socket.join(data);
-                
+
                 socket.emit("room", JSON.stringify([isQueue, data]));
                 if (io.sockets.adapter.rooms.get(data).size == 1) {
                     socket.emit("messageLog", "Waiting for other player to join this room.");
@@ -622,7 +621,3 @@ setInterval(function () {
 }, 1000);
 
 server.listen((process.env.PORT || port), () => console.log('listening on port ' + port));
-
-
-
-
