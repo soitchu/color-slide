@@ -257,15 +257,15 @@ function findMatch() {
             setTimeout(() => {
                 try {
                     const members = Array.from(io.sockets.adapter.rooms.get(room.toString()));
-                    const mem1 = members.indexOf(couple[0]);
-                    const mem2 = members.indexOf(couple[1]);
+                    const mem1 = members.includes(couple[0]);
+                    const mem2 = members.includes(couple[1]);
                     console.log(mem1, members, couple);
-                    if (mem1 === -1 && mem2 === -1) {
-                    } else if (mem1 === -1) {
+                    if (!mem1 && !mem2) {
+                    } else if (!mem1) {
                         leaveAllRoom(second);
                         queue.shift(couple[1]);
                         second.emit("queue", "yes");
-                    } else if (mem2 === -1) {
+                    } else if (!mem2) {
                         leaveAllRoom(first);
                         queue.shift(couple[0]);
                         first.emit("queue", "yes");
@@ -457,10 +457,10 @@ function onConnection(socket) {
 
         try {
             const members = Array.from(io.sockets.adapter.rooms.get(room_name));
-            if (thisRoom.ready.indexOf(socket.id) === -1 && members.length === 2 && thisRoom.inProgress === false) {
+            if (!thisRoom.ready.includes(socket.id) && members.length === 2 && thisRoom.inProgress === false) {
                 thisRoom.ready.push(socket.id);
 
-                if (thisRoom.ready.indexOf(members[0]) > -1 && thisRoom.ready.indexOf(members[1]) > -1) {
+                if (thisRoom.ready.includes(members[0]) && thisRoom.ready.includes(members[1])) {
                     io.in(room_name).emit("start", 1);
                     thisRoom.readyOnce = true;
 
