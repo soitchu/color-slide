@@ -10,7 +10,7 @@ const config = require('./config.json');
 
 console.log(config);
 
-let queue = new LinkedList();
+const queue = new LinkedList();
 
 class gameClass {
     constructor(gameDiv, config) {
@@ -60,14 +60,14 @@ class gameClass {
         }
 
         /// Getting the coordinates of the hole adjacent, which is determined by the variable 'dir'
-        let holeAbove = [this.currentHole[0] + yOffset, this.currentHole[1] + xOffset];
+        const holeAbove = [this.currentHole[0] + yOffset, this.currentHole[1] + xOffset];
 
 
 
 
 
         /// Swapping the numbers in the main game array
-        let tempNum = this.game[holeAbove[0]][holeAbove[1]];
+        const tempNum = this.game[holeAbove[0]][holeAbove[1]];
         this.game[holeAbove[0]][holeAbove[1]] = this.game[this.currentHole[0]][this.currentHole[1]];
         this.game[this.currentHole[0]][this.currentHole[1]] = tempNum;
 
@@ -89,14 +89,14 @@ class gameClass {
         /// The initial state of the game is determined by moving the tiles from the
         /// original configuration; this will ensure that it is always possible for the user
         /// to use legal moves to go back to the original configuration to win the game
-        let times = Math.floor(Math.random() * 20) + 200;
+        const times = Math.floor(Math.random() * 20) + 200;
 
         /// As the hole is initially at the bottom left, the first moves should be top or left
         let random = [1, 2, 3, 4];
         for (let i = 0; i < times; i++) {
             /// Choosing a random move to make
-            let last = (Math.floor(Math.random() * 100)) % (random.length);
-            let moved = random[last];
+            const last = (Math.floor(Math.random() * 100)) % (random.length);
+            const moved = random[last];
 
             /// If the move made does not affect the configration of the game, then try again
             /// so hopefully we don't get the same move again.
@@ -134,7 +134,7 @@ class gameClass {
 
     }
     storeConfig() {
-        let temp = [];
+        const temp = [];
 
         for (let i = 1; i <= 3; i++) {
             temp.push([]);
@@ -197,7 +197,7 @@ const io = require("socket.io")(server, {
 });
 const port = config.webSocketPort;
 
-let data_m = {};
+const data_m = {};
 let currentRoom = 0;
 
 function randomRange(min, max) {
@@ -209,13 +209,13 @@ function randomRange(min, max) {
     changing it later on
 */
 function getRandomRoomName() {
-    let rn = (100 + randomRange(0, 899)) * 1000 + currentRoom;
+    const rn = (100 + randomRange(0, 899)) * 1000 + currentRoom;
     currentRoom++;
     if (currentRoom > 999) {
         currentRoom = 0;
     }
 
-    let s = io.sockets.adapter.rooms.get(rn);
+    const s = io.sockets.adapter.rooms.get(rn);
     if (typeof s == "undefined") {
         return rn;
     } else if (s.size == 0) {
@@ -228,16 +228,15 @@ function getRandomRoomName() {
 }
 
 function isActive(socketId) {
-    let socket = io.sockets.sockets.get(socketId);
+    const socket = io.sockets.sockets.get(socketId);
     return (socket !== undefined && Array.from(socket.rooms).length == 1);
 }
 
 
 function findNextActiveSocket() {
-    let i = 0;
-    let couple = [];
+    const couple = [];
     while (queue.length > 1 && couple.length < 2) {
-        let temp = queue.value(couple.length);
+        const temp = queue.value(couple.length);
         if (!isActive(temp)) {
             queue.removeElementAtIndex(couple.length);
         } else {
@@ -261,7 +260,7 @@ function findNextActiveSocket() {
 
 
 function leaveAllRoom(socket){
-    let roomsAll = Array.from(socket.rooms);
+    const roomsAll = Array.from(socket.rooms);
     for (let i = 0; i < roomsAll.length; i++) {
         if (roomsAll[i] == socket.id) { continue; }
         socket.leave(roomsAll[i]);
@@ -269,20 +268,20 @@ function leaveAllRoom(socket){
 }
 function findMatch() {
     while (true) {
-        let couple = findNextActiveSocket();
-        let first = io.sockets.sockets.get(couple[0]);
-        let second = io.sockets.sockets.get(couple[1]);
+        const couple = findNextActiveSocket();
+        const first = io.sockets.sockets.get(couple[0]);
+        const second = io.sockets.sockets.get(couple[1]);
         if (couple === false) {
             break;
         } else {
-            let room = getRandomRoomName();
+            const room = getRandomRoomName();
             first.emit("joinThis", room);
             second.emit("joinThis", room);
             setTimeout(function () {
                 try{
-                    let members = Array.from(io.sockets.adapter.rooms.get(room.toString()));
-                    let mem1 = members.indexOf(couple[0]);
-                    let mem2 = members.indexOf(couple[1]);
+                    const members = Array.from(io.sockets.adapter.rooms.get(room.toString()));
+                    const mem1 = members.indexOf(couple[0]);
+                    const mem2 = members.indexOf(couple[1]);
                     console.log(mem1, members, couple);
                     if (mem1 == -1 && mem2 == -1) {
                     } else if (mem1 == -1) {
@@ -306,14 +305,14 @@ function findMatch() {
 }
 
 function cloneArray(array, dimensions) {
-    let clonedArray = [];
+    const clonedArray = [];
     if (dimensions == 1) {
         for (let i = 0; i < array.length; i++) {
             clonedArray.push(array[i]);
         }
     } else if (dimensions == 2) {
         for (let i = 0; i < array.length; i++) {
-            let temp = [];
+            const temp = [];
             for (let j = 0; j < array[i].length; j++) {
                 temp.push(array[i][j]);
             }
@@ -345,7 +344,7 @@ function onConnection(socket) {
     let queueNode = null;
     let lastRoom;
     // Making the user leave the rooms its already in
-    let roomsAll = Array.from(socket.rooms);
+    const roomsAll = Array.from(socket.rooms);
     for (let i = 0; i < roomsAll.length; i++) {
         if (roomsAll[i] == socket.id) { continue; }
         socket.leave(roomsAll[i]);
@@ -360,7 +359,7 @@ function onConnection(socket) {
             queue.removeElement(queueNode);
         }
         try {
-            let roomSize = io.sockets.adapter.rooms.get(data);
+            const roomSize = io.sockets.adapter.rooms.get(data);
             if (roomSize != undefined && roomSize != null && roomSize.size >= 2) {
                 socket.emit("message", "There are already more than 2 people in this room.");
                 return;
@@ -434,7 +433,7 @@ function onConnection(socket) {
 
 
     socket.on('ping', function (data) {
-        let roomsAll1 = Array.from(socket.rooms);
+        const roomsAll1 = Array.from(socket.rooms);
         if (roomsAll1.length > 1) {
             socket.emit('ping', roomsAll1[1]);
         } else {
@@ -451,7 +450,7 @@ function onConnection(socket) {
                 return;
             }
             data = JSON.parse(data);
-            let members = Array.from(io.sockets.adapter.rooms.get(room_name));
+            const members = Array.from(io.sockets.adapter.rooms.get(room_name));
 
             if ((thisRoom.inProgress == false || isNaN(parseInt(data[0])) || members.length != 2)) {
                 return;
@@ -505,7 +504,7 @@ function onConnection(socket) {
         }
 
         try {
-            let members = Array.from(io.sockets.adapter.rooms.get(room_name));
+            const members = Array.from(io.sockets.adapter.rooms.get(room_name));
             if (thisRoom.ready.indexOf(socket.id) == -1 && members.length == 2 && thisRoom.inProgress == false) {
                 thisRoom.ready.push(socket.id);
 
@@ -561,7 +560,7 @@ function onConnection(socket) {
         try {
             data = JSON.parse(data);
             console.log(data);
-            let roomNum = data[1].toString();
+            const roomNum = data[1].toString();
             joinRoom(roomNum, socket, data[0]);
         } catch (err) {
             console.log(err);
@@ -601,7 +600,7 @@ io.of("/").adapter.on("leave-room", (room, id) => {
     try {
 
         if (room.toString().length == "6") {
-            let s = io.sockets.adapter.rooms.get(room);
+            const s = io.sockets.adapter.rooms.get(room);
             if ((typeof s == "undefined" || s.size == 0)) {
                 delete_hist(room);
             } else {
