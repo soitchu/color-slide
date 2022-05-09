@@ -487,10 +487,11 @@ function onConnection(socket) {
                     setTimeout(() => {
                         thisRoom.ready = [];
                         thisRoom.inProgress = true;
+                        const { currentHole, game, currentConfig: preview } = data_m[room_name].game
                         io.in(room_name).emit("changeConfig", JSON.stringify({
-                            currentHole: data_m[room_name].game.currentHole,
-                            game: data_m[room_name].game.game,
-                            preview: data_m[room_name].game.currentConfig
+                            currentHole,
+                            game,
+                            preview,
                         }));
                     }, 3000);
                 } else {
