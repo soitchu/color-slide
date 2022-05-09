@@ -422,7 +422,10 @@ function onConnection(socket) {
             }
             thisRoom[socket.id].game.move(data[0]);
 
-            socket.to(room_name).emit('move', JSON.stringify({ "data": data[0], "type": 0 }));
+            socket.to(room_name).emit('move', JSON.stringify({
+                type: 0,
+                data: data[0],
+            }));
 
             if (thisRoom[socket.id].game.compare(thisRoom.game.currentConfig, thisRoom[socket.id].game.storeConfig()) === 1) {
                 thisRoom.inProgress = false;
@@ -484,7 +487,11 @@ function onConnection(socket) {
                     setTimeout(() => {
                         thisRoom.ready = [];
                         thisRoom.inProgress = true;
-                        io.in(room_name).emit("changeConfig", JSON.stringify({ currentHole: data_m[room_name].game.currentHole, game: data_m[room_name].game.game, preview: data_m[room_name].game.currentConfig }));
+                        io.in(room_name).emit("changeConfig", JSON.stringify({
+                            currentHole: data_m[room_name].game.currentHole,
+                            game: data_m[room_name].game.game,
+                            preview: data_m[room_name].game.currentConfig
+                        }));
                     }, 3000);
                 } else {
                     if (thisRoom.readyOnce) {
