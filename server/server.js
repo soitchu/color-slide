@@ -273,8 +273,8 @@ function findMatch() {
                         first.emit("show", 1);
                         second.emit("show", 1);
                     }
-                } catch(err) {
-                    console.log(err);
+                } catch (err) {
+                    console.error(err);
                 }
             }, 1000);
         }
@@ -379,7 +379,7 @@ function onConnection(socket) {
 
             }
         } catch (err) {
-            console.log(err);
+            console.error(err);
         }
     }
 
@@ -396,7 +396,7 @@ function onConnection(socket) {
             data = getRandomRoomName().toString();
             joinRoom(data, socket);
         } catch (err) {
-            console.log(err);
+            console.error(err);
         }
     });
 
@@ -446,7 +446,7 @@ function onConnection(socket) {
                 }));
             }
         } catch (err) {
-            console.log(err);
+            console.error(err);
         }
     });
 
@@ -498,7 +498,7 @@ function onConnection(socket) {
                 }
             }
         } catch (err) {
-            console.log(err);
+            console.error(err);
         }
     });
 
@@ -509,7 +509,7 @@ function onConnection(socket) {
             const roomNum = data[1].toString();
             joinRoom(roomNum, socket, data[0]);
         } catch (err) {
-            console.log(err);
+            console.error(err);
         }
     });
 
@@ -521,7 +521,7 @@ function onConnection(socket) {
                 queueNode = queue.push(socket.id);
             }
         } catch (err) {
-            console.log(err);
+            console.error(err);
         }
     });
 
@@ -551,7 +551,7 @@ io.of("/").adapter.on("leave-room", (room, id) => {
             }
         }
     } catch (err) {
-        console.log(err);
+        console.error(err);
     }
 });
 
