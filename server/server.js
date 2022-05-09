@@ -186,7 +186,7 @@ const port = config.webSocketPort;
 const data_m = {};
 let currentRoom = 0;
 
-function randomRange(min, max) {
+function randomRange(max, min = 0) {
     return Math.floor(Math.random() * (max - min) + min);
 }
 
@@ -196,7 +196,7 @@ function randomRange(min, max) {
     changing it later on
 */
 function getRandomRoomName() {
-    const rn = (100 + randomRange(0, 899)) * 1000 + currentRoom;
+    const rn = (100 + randomRange(899)) * 1000 + currentRoom;
     currentRoom++;
     if (currentRoom > 999) {
         currentRoom = 0;
