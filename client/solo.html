@@ -1,0 +1,978 @@
+<html>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    #container {
+        background-color: #000000;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 800 800'%3E%3Cg %3E%3Ccircle fill='%23000000' cx='400' cy='400' r='600'/%3E%3Ccircle fill='%23230046' cx='400' cy='400' r='500'/%3E%3Ccircle fill='%232f0052' cx='400' cy='400' r='400'/%3E%3Ccircle fill='%233b075e' cx='400' cy='400' r='300'/%3E%3Ccircle fill='%2348156a' cx='400' cy='400' r='200'/%3E%3Ccircle fill='%23552277' cx='400' cy='400' r='100'/%3E%3C/g%3E%3C/svg%3E");
+        background-attachment: fixed;
+        background-position: center;
+        background-size: cover;
+        overflow: hidden;
+        height: 100%;
+        width: 100%;
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+
+    .game_container {
+        height: 100%;
+        width: 100%;
+        position: absolute;
+        left: 0;
+        top: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: row;
+    }
+
+    .game_main {
+        background-color: rgb(255, 255, 255);
+        border-radius: 10px;
+        padding: 20px;
+
+        position: relative;
+
+    }
+
+    .game_column {
+        border-radius: 10px;
+        display: flex;
+        flex-direction: row;
+        padding: 5px 10px 5px 10px;
+
+    }
+
+    /* .tileShadow{ */
+    /* background-color: #5ae1ff; */
+    /* } */
+    .tile {
+        border: 4px solid black;
+        box-sizing: border-box;
+        height: 50px;
+        width: 50px;
+        background-color: rgb(38, 39, 122);
+        border-radius: 10px;
+        color: white;
+        display: inline-block;
+        margin: 5px;
+        font-family: 'Montserrat', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition-duration: 0.14s;
+        font-size: 20px;
+        user-select: none;
+    }
+
+    .tileShadow {
+        height: 50px;
+        width: 50px;
+        background-color: rgba(253, 253, 253, 0);
+        border-radius: 10px;
+        color: white;
+        display: inline-block;
+        margin: 5px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 20px;
+    }
+
+    .shadowCon {
+        position: absolute;
+        top: 0;
+        left: 0;
+        padding: 10px;
+        z-index: 1;
+    }
+
+    .tilesCon {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        z-index: 2;
+    }
+
+    .preview {
+
+        height: 140px;
+        width: 130px;
+        border-radius: 10px;
+        background: #000000;
+        margin: auto;
+        margin-top: 20px;
+        padding: 10px;
+
+    }
+
+    .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background-color: rgba(0, 0, 0, 0.27);
+    }
+
+    .previewTiles {
+        height: 30px;
+        width: 30px;
+        margin: 3.333px;
+        border: 2px solid white;
+        border-radius: 10px;
+        box-sizing: border-box;
+    }
+
+    #secondGame {
+        display: block;
+
+    }
+
+    .menu {
+        height: 100%;
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        justify-content: center;
+        align-items: center;
+        display: flex;
+        flex-direction: row;
+    }
+
+    #hostGame {
+        height: 100%;
+        width: 50%;
+
+        justify-content: center;
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        font-family: 'Montserrat', sans-serif;
+        text-align: center;
+        color: white;
+
+    }
+
+    #line {
+        height: 30%;
+        width: 1px;
+        background-color: white;
+    }
+
+    #joinGame {
+        height: 100%;
+        width: 50%;
+
+        justify-content: center;
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        font-family: 'Montserrat', sans-serif;
+        text-align: center;
+        color: white;
+    }
+
+    button {
+        display: inline-block;
+        padding: 0.7em 1.4em;
+        margin: 0 0.3em 0.3em 0;
+        border-radius: 0.15em;
+        border: 0;
+        box-sizing: border-box;
+        text-decoration: none;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 400;
+        color: #FFFFFF;
+        background-color: #b42e6e;
+        box-shadow: inset 0 -0.6em 0 -0.35em rgba(0, 0, 0, 0.17);
+        text-align: center;
+        position: relative;
+    }
+
+    button:active {
+        box-shadow: inset 0 -0.6em 0 -0.35em rgba(0, 0, 0, 0);
+
+    }
+
+    #roomNumInput {
+
+        height: 35px;
+        padding: 10px;
+        width: 170px;
+        margin: 10px;
+        outline: none;
+        border-radius: 10px;
+        font-family: 'Montserrat', sans-serif;
+        border: 0;
+
+    }
+
+    #roomNumDiv {
+        position: absolute;
+        top: 10px;
+        right: 0px;
+        padding: 10px;
+        background-color: white;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 15px;
+        color: black;
+        border-radius: 10px 0px 0px 10px;
+    }
+
+    #messageDiv {
+        position: absolute;
+        top: 60px;
+        bottom: auto;
+        right: 0px;
+        max-width: 200px;
+        padding: 10px;
+        background-color: white;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 15px;
+        color: black;
+        border-radius: 10px 0px 0px 10px;
+    }
+
+    #ready {
+        position: absolute;
+        margin: 10px;
+        top: 0;
+        left: 0;
+    }
+
+
+    #playAgain {
+        position: absolute;
+        margin: 10px;
+        top: 50px;
+        bottom: auto;
+        left: 0;
+        display: none;
+    }
+
+    #queueMessage {
+        display: none;
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 10px;
+        position: absolute;
+        top: 0;
+        background-color: white;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 15px;
+        font-family: 'Montserrat', sans-serif;
+        border-radius: 10px;
+    }
+
+    @media only screen and (max-width: 900px) {
+        .game_container {
+            flex-direction: column;
+        }
+
+        #secondGame {
+            display: none;
+        }
+
+        .menu {
+            flex-direction: column;
+        }
+
+        #line {
+            height: 1px;
+            width: 30%;
+            background-color: white;
+        }
+
+        #messageDiv {
+            bottom: 10px;
+
+            top: auto;
+
+        }
+
+        #playAgain {
+            bottom: 10px;
+            top: auto;
+
+        }
+
+    }
+
+
+    #noti_con {
+        overflow-y: auto;
+        overflow-x: hidden;
+        width: 400px;
+        max-width: 100%;
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        margin: 0;
+        padding: 0;
+        background: transparent;
+        z-index: 100;
+
+        max-height: 100%;
+    }
+
+
+    .noti {
+        width: calc(100% - 20px);
+        font-size: 15px;
+        border-radius: 10px;
+        min-height: 100px;
+        margin: 10px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transform: translateX(calc(-100% - 20px));
+        animation-name: enter;
+        animation-duration: 0.2s;
+        animation-timing-function: ease-in;
+        animation-iteration-count: 1;
+        animation-fill-mode: forwards;
+        flex-direction: column;
+        overflow: hidden;
+
+    }
+
+    @keyframes enter {
+
+        0% {
+            transform: translateX(calc(-100% - 20px));
+
+        }
+
+        100% {
+            transform: translateX(0px);
+
+        }
+
+    }
+
+    .noti_head {
+        color: white;
+        text-align: left;
+        color: white;
+        text-align: left;
+        width: 100%;
+        padding: 20px;
+        padding-bottom: 0px;
+        font-family: 'Montserrat', sans-serif;
+
+        box-sizing: border-box;
+    }
+
+    .noti_data {
+        color: white;
+        text-align: left;
+        color: white;
+        text-align: left;
+        width: 100%;
+        font-family: 'Montserrat', sans-serif;
+
+        padding: 20px;
+        padding-top: 10px;
+        box-sizing: border-box;
+    }
+
+
+    .dot {
+        width: 20px;
+        height: 20px;
+        background: white;
+        border-radius: 50%;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        /*position: relative;*/
+
+    }
+
+    .dot::after {
+        content: '\02715';
+        font-size: 10px;
+        /*line-height: 100px;*/
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .timer {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background-color: white;
+
+        animation-name: timerNoti;
+        animation-timing-function: linear;
+        animation-iteration-count: 1;
+        animation-fill-mode: forwards;
+
+    }
+
+    @keyframes timerNoti {
+
+        0% {
+            width: 100%;
+
+        }
+
+        100% {
+            width: 0;
+        }
+
+    }
+
+    .redNoti {
+        background: linear-gradient(to bottom left, #843f6c 40%, #bf4277 100%);
+    }
+
+    .blueNoti {
+        background: linear-gradient(to bottom left, #4561c9 40%, #508396 100%);
+
+    }
+</style>
+
+<body onload="init()">
+    <div id="container">
+        <div id="noti_con"></div>
+        <div class="game_container">
+            <div class="game_main">
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+</body>
+
+
+
+
+
+<script type="text/javascript">
+    class notification {
+        constructor(DomElem, data) {
+            this.data = data;
+            this.elem = DomElem;
+            if ("color" in data) {
+                this.className = "redNoti";
+            } else {
+                this.className = "blueNoti";
+
+            }
+            this.create();
+
+        }
+
+        create() {
+
+            var newElem = document.createElement("div");
+            var dur = "";
+            if (this.data.perm != 0) {
+                dur = "animation-duration:" + this.data.perm + "s";
+                setTimeout(function () {
+                    try {
+                        newElem.remove();
+                    } catch (err) {
+
+                    }
+                }, (this.data.perm * 1000));
+            }
+            newElem.className = "noti " + this.className;
+            newElem.innerHTML = `
+				<div class="dot" onclick='removeParent(this);'></div>
+				<div class="timer" style='${dur}'></div>
+				<div class="noti_head" >${this.data.head}</div>
+
+				<div class="noti_data">
+					${this.data.notiData}
+
+				</div>`;
+
+            this.elem.prepend(newElem);
+
+        }
+
+
+
+    }
+    class gameClass {
+        constructor(gameDiv, config) {
+            this.config = config;
+            this.main = gameDiv;
+            this.tileCountTotal = this.config.n;
+            this.game = [];
+            this.colors = ["#000000", "#ffffff", "#b83030", "#0b1470", "#b5c229", "#b04272"];
+            this.canMove = false;
+            /// Setting up the initial game-array
+            for (var i = 0; i < this.tileCountTotal; i++) {
+                this.game.push([]);
+                for (var j = 0; j < this.tileCountTotal; j++) {
+                    this.game[this.game.length - 1][j] = i * this.tileCountTotal + j + 1;
+                }
+            }
+
+            /// The hole's position is represented by a '0' and it's location is on the bottom-right
+            this.game[this.tileCountTotal - 1][this.tileCountTotal - 1] = 0;
+            this.currentHole = [this.tileCountTotal - 1, this.tileCountTotal - 1];
+
+            /// the object 'locations' remembers the location of each tile and transltes them
+            this.locations = {};
+            for (var i = 0; i < this.tileCountTotal * this.tileCountTotal; i++) {
+                this.locations[i] = {
+                    x: 0,
+                    y: 0,
+                };
+            }
+            var self = this;
+
+        }
+
+        /*
+            Creates the tiles and returns the DIV
+        */
+        createTile(num) {
+
+
+            let tempTile = document.createElement("div");
+            if (num == 0) {
+                tempTile.style.opacity = 0;
+            }
+            tempTile.className = "tile";
+
+            /// Applying the style according to the config file provided
+
+            tempTile.style.margin = `${this.config.margin}px`;
+            tempTile.style.height = `${this.config.size}px`;
+            tempTile.style.width = `${this.config.size}px`;
+
+            tempTile.id = this.config.name + num;
+            tempTile.style.backgroundColor = this.colors[(num) % 6];
+            return tempTile;
+        }
+
+        createPreviewTile(num) {
+
+
+            let tempTile = document.createElement("div");
+
+            tempTile.className = "previewTiles";
+
+            /// Applying the style according to the config file provided
+
+
+            tempTile.style.backgroundColor = this.colors[(num)];
+            return tempTile;
+        }
+
+        createTileShadow() {
+            let tempTile = document.createElement("div");
+            tempTile.className = "tileShadow";
+
+            /// Applying the style according to the config file provided
+
+            tempTile.style.margin = `${this.config.margin}px`;
+            tempTile.style.height = `${this.config.size}px`;
+            tempTile.style.width = `${this.config.size}px`;
+
+            return tempTile;
+        }
+
+        move(dir, wonAlert = true) {
+            let xOffset = 0, yOffset = 0;
+
+            /// dir 3 : top
+            /// dir 1 : bottom
+            /// dir 4 : left
+            /// dir 2 : right
+
+            if (dir == 3) {
+                yOffset = -1;
+            } else if (dir == 1) {
+                yOffset = 1;
+            } else if (dir == 4) {
+                xOffset = -1;
+            } else if (dir == 2) {
+                xOffset = 1;
+            }
+
+            /// We don't wanna move if the the hold is on the edge
+            if (!this.canMove && wonAlert) {
+                return -2;
+            }
+            else if ((this.currentHole[0] + yOffset) >= (this.tileCountTotal) || (this.currentHole[1] + xOffset) >= (this.tileCountTotal) || (this.currentHole[1] + xOffset) < 0 || (this.currentHole[0] + yOffset) < 0) {
+                return -1;
+            }
+
+            /// Getting the coordinates of the hole adjacent, which is determined by the variable 'dir'
+            let holeAbove = [this.currentHole[0] + yOffset, this.currentHole[1] + xOffset];
+
+            let holeAboveDOM = document.getElementById(`${this.config.name}${this.game[holeAbove[0]][holeAbove[1]]}`);
+            let holeDOM = document.getElementById(`${this.config.name}0`);
+
+            /// Getting the location so we can translate it
+            let thisLoc = this.locations[this.game[holeAbove[0]][holeAbove[1]]];
+            let thisHoleLoc = this.locations[this.game[this.currentHole[0]][this.currentHole[1]]];
+
+
+            if (yOffset != 0) {
+                thisHoleLoc.y += (this.config.size + this.config.margin * 2 + 10) * yOffset;
+                thisLoc.y += -(this.config.size + this.config.margin * 2 + 10) * yOffset;
+            } else if (xOffset != 0) {
+                thisHoleLoc.x += (this.config.size + this.config.margin * 2) * xOffset;
+                thisLoc.x += -(this.config.size + this.config.margin * 2) * xOffset;
+            }
+
+            /// Applying the translated positions
+            holeAboveDOM.style.transform = `translate(${thisLoc.x}px,${thisLoc.y}px)`;
+            holeDOM.style.transform = `translate(${thisHoleLoc.x}px,${thisHoleLoc.y}px)`;
+
+            /// Swapping the numbers in the main game array
+            let tempNum = this.game[holeAbove[0]][holeAbove[1]];
+            this.game[holeAbove[0]][holeAbove[1]] = this.game[this.currentHole[0]][this.currentHole[1]];
+            this.game[this.currentHole[0]][this.currentHole[1]] = tempNum;
+
+            /// Changing the hole's position to its current location
+            if (yOffset != 0) {
+                this.currentHole[0] += yOffset;
+            } else if (xOffset != 0) {
+                this.currentHole[1] += xOffset;
+            }
+
+            let lastNum = -1;
+            let won = -1;
+
+
+            if (wonAlert && this.compare(this.currentConfig, this.storeConfig()) == 1) {
+                const event = new Event('won');
+
+                document.dispatchEvent(event);
+
+            } else if (wonAlert) {
+                const event2 = new Event('move');
+                document.dispatchEvent(event2);
+            }
+
+
+
+
+
+
+        }
+
+        reinitialise() {
+            this.canMove = false;
+            this.main.innerHTML = "";
+
+
+            let shadowContainer = document.createElement("div");
+            shadowContainer.className = "shadowCon";
+            this.main.append(shadowContainer);
+
+            let tilesContainer = document.createElement("div");
+            tilesContainer.className = "tilesCon";
+            this.main.append(tilesContainer);
+
+
+            for (var i = 0; i < this.tileCountTotal; i++) {
+                let tempColumn = document.createElement("div");
+                tempColumn.className = "game_column";
+                for (var j = 0; j < this.tileCountTotal; j++) {
+                    tempColumn.append(this.createTile(this.game[i][j]));
+                }
+                tilesContainer.append(tempColumn);
+
+                let tempColumnShadow = document.createElement("div");
+                tempColumnShadow.className = "game_column";
+                for (var j = 0; j < this.tileCountTotal; j++) {
+                    tempColumnShadow.append(this.createTileShadow());
+                }
+                shadowContainer.append(tempColumnShadow);
+            }
+
+
+            for (var i = 0; i < this.tileCountTotal * this.tileCountTotal; i++) {
+                this.locations[i] = {
+                    x: 0,
+                    y: 0,
+                };
+            }
+            this.canMove = true;
+
+        }
+        randomise() {
+            /// The initial state of the game is determined by moving the tiles from the 
+            /// original configuration; this will ensure that it is always possible for the user
+            /// to use legal moves to go back to the original configuration to win the game
+            var times = Math.floor(Math.random() * 20) + 200;
+            var last = 0;
+
+            /// As the hole is initially at the bottom left, the first moves should be top or left
+            var random = [1, 2, 3, 4];
+            for (var i = 0; i < times; i++) {
+                /// Choosing a random move to make
+                var last = (Math.floor(Math.random() * 100)) % (random.length);
+                let moved = random[last];
+
+                /// If the move made does not affect the configration of the game, then try again 
+                /// so hopefully we don't get the same move again. 
+                if (this.move(moved, false) == -1) {
+                    i--;
+                    continue;
+                }
+
+                /// The next random array should not undo what the last move did,
+                /// so eliminating that possibility
+                if (moved == 3 || moved == 1) {
+                    random = [4, 2, moved];
+                } else if (moved == 2 || moved == 4) {
+                    random = [1, 3, moved];
+                }
+
+                /// If the hole is on the corner, don't make moves that would not change the conifguration at all
+                if (this.currentHole[0] == 0 && this.currentHole[1] == 0) {
+                    random = [1, 2];
+                } else if (this.currentHole[0] == 0 && this.currentHole[1] == (this.tileCountTotal - 1)) {
+                    random = [1, 4];
+                } else if (this.currentHole[1] == 0 && this.currentHole[0] == (this.tileCountTotal - 1)) {
+                    random = [3, 2];
+                } else if (this.currentHole[1] == (this.tileCountTotal - 1) && this.currentHole[0] == (this.tileCountTotal - 1)) {
+                    random = [3, 4];
+                }
+
+            }
+
+            for (var i = 0; i < 5; i++) {
+                this.move(2, false);
+                this.move(1, false);
+
+            }
+
+        }
+        storeConfig() {
+            let temp = [];
+
+            for (var i = 1; i <= 3; i++) {
+                temp.push([]);
+                for (var j = 1; j <= 3; j++) {
+                    if (this.game[i][j] == 0) {
+                        temp[i - 1].push(-1);
+                    } else {
+                        temp[i - 1].push(this.game[i][j] % 6);
+                    }
+                }
+            }
+            return temp;
+        }
+        compare(arr1, arr2) {
+            for (var i = 0; i < 3; i++) {
+                for (var j = 0; j < 3; j++) {
+                    if (arr1[i][j] != arr2[i][j]) {
+                        return -1;
+                    }
+                }
+            }
+
+            return 1;
+
+        }
+        initialise() {
+
+            /// Appending the tiles in the main div
+            let shadowContainer = document.createElement("div");
+            shadowContainer.className = "shadowCon";
+            this.main.append(shadowContainer);
+
+
+            let tilesContainer = document.createElement("div");
+            tilesContainer.className = "tilesCon";
+            this.main.append(tilesContainer);
+
+
+            for (var i = 0; i < this.tileCountTotal; i++) {
+                let tempColumn = document.createElement("div");
+                tempColumn.className = "game_column";
+                for (var j = 0; j < this.tileCountTotal; j++) {
+                    tempColumn.append(this.createTile(this.game[i][j]));
+                }
+                tilesContainer.append(tempColumn);
+
+                let tempColumnShadow = document.createElement("div");
+                tempColumnShadow.className = "game_column";
+                for (var j = 0; j < this.tileCountTotal; j++) {
+                    tempColumnShadow.append(this.createTileShadow());
+                }
+                shadowContainer.append(tempColumnShadow);
+            }
+
+            this.randomise();
+            this.currentConfig = this.storeConfig();
+
+            let previewCon = document.createElement("div");
+            previewCon.className = "preview";
+            this.main.append(previewCon);
+
+            for (var i = 0; i < 3; i++) {
+                let tempColumn = document.createElement("div");
+                tempColumn.className = "game_column";
+                for (var j = 0; j < 3; j++) {
+                    tempColumn.append(this.createPreviewTile(this.currentConfig[i][j]));
+                }
+                previewCon.append(tempColumn);
+            }
+
+            this.randomise();
+
+            this.canMove = true;
+
+        }
+
+
+    };
+
+
+    var game;
+    var config = {
+        "margin": 5,
+        "size": 50,
+        "n": 5,
+        "name": "tile",
+    };
+
+    var times = 5;
+    var timeWon = 0;
+    var firstMove = true;
+    var startTime;
+    var timings = [];
+    document.addEventListener('won', function (e) {
+        let y = (performance.now() - startTime) / 1000;
+        timings.push(y);
+        timeWon++;
+
+        if (timeWon == times) {
+            let g = 0;
+            for (var i = 0; i < timings.length; i++) {
+                g += timings[i];
+            }
+            g = g / timings.length;
+            new notification(document.getElementById("noti_con"), {
+                "perm": 0,
+                "head": "Notification",
+                "notiData": `Average time: ${g} seconds`
+            });
+
+
+            timeWon = 0;
+            firstMove = true;
+            startTime;
+            timings = [];
+        } else {
+            new notification(document.getElementById("noti_con"), {
+                "perm": 3,
+                "head": "Notification",
+                "notiData": `Completed in ${y} seconds`
+            });
+        }
+        firstMove = true;
+
+        var game_div = document.getElementsByClassName("game_main")[0];
+        game_div.innerHTML = "";
+        game = new gameClass(game_div, config);
+        game.initialise();
+    }, false);
+
+    document.addEventListener('move', function (e) {
+        console.log("rrr");
+        if (firstMove) {
+            startTime = performance.now();
+        }
+
+        firstMove = false;
+    }, false);
+
+    window.onload = function () {
+        var game_div = document.getElementsByClassName("game_main")[0];
+        if (window.innerWidth < ((config.size + 2 * config.margin) * (config.n) + 20)) {
+            config.size = Math.floor(((window.innerWidth - 40) / config.n) - 2 * config.margin);
+        }
+        game = new gameClass(game_div, config);
+        game.initialise();
+
+        window.onkeydown = function (event) {
+            if (event.keyCode == 37 || event.keyCode == 65) {
+                game.move(2);
+            }
+
+            if (event.keyCode == 38 || event.keyCode == 87) {
+                game.move(1);
+            }
+
+            if (event.keyCode == 39 || event.keyCode == 68) {
+                game.move(4);
+            }
+
+            if (event.keyCode == 40 || event.keyCode == 83) {
+                game.move(3);
+            }
+        };
+
+        let touchStatus = {};
+        window.addEventListener("touchstart", function (event) {
+            touchStatus.start = {};
+            touchStatus.start.x = event.touches[0].screenX;
+            touchStatus.start.y = event.touches[0].screenY;
+        });
+
+        window.addEventListener("touchmove", function (event) {
+            event.preventDefault();
+        }, { passive: false });
+
+
+        window.addEventListener("touchend", function (event) {
+            let xDiff = event.changedTouches[0].screenX - touchStatus.start.x;
+            let yDiff = event.changedTouches[0].screenY - touchStatus.start.y;
+
+            if (Math.abs(xDiff) > Math.abs(yDiff)) {
+                if (Math.abs(xDiff) > 30) {
+                    if (xDiff < 0) {
+                        game.move(2);
+
+                    } else {
+                        game.move(4);
+
+                    }
+                }
+            } else {
+                console.log(yDiff);
+                if (Math.abs(yDiff) > 30) {
+                    if (yDiff < 0) {
+                        game.move(1);
+
+                    } else {
+                        game.move(3);
+
+                    }
+                }
+            }
+        });
+        window.addEventListener("touchcancel", function (event) {
+            console.log(event.changedTouches);
+        });
+
+    };
+
+
+</script>
+
+</html>
