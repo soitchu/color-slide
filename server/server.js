@@ -466,14 +466,7 @@ function onConnection(socket) {
 
             }
 
-            let otherId;
-
-            if (members[0] === socket.id) {
-                otherId = members[1];
-            } else {
-                otherId = members[0];
-
-            }
+            const otherId = (members[0] === socket.id) ? members[1] : members[0];
 
             if (compareArray(data[2], thisRoom[socket.id].game.game, 5, 5) === -1) {
                 socket.emit('reset', JSON.stringify({
