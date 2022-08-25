@@ -1,5 +1,5 @@
 ## Demo
-https://rubiks-race.herokuapp.com/
+https://childlike-south-stilton.glitch.me/
 
 ## Installation (server)
 
