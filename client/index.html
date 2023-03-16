@@ -713,6 +713,41 @@
         });
 
 
+        const mouseStatus = {};
+
+        window.addEventListener("mousedown", function (event) {
+            mouseStatus.start = {};
+            mouseStatus.start.x = event.screenX;
+            mouseStatus.start.y = event.screenY;
+        });
+
+        window.addEventListener("mouseup", function (event) {
+            let xDiff = event.screenX - mouseStatus.start.x;
+            let yDiff = event.screenY - mouseStatus.start.y;
+
+            if (Math.abs(xDiff) > Math.abs(yDiff)) {
+                if (Math.abs(xDiff) > 30) {
+                    if (xDiff < 0) {
+                        game.move(2);
+
+                    } else {
+                        game.move(4);
+
+                    }
+                }
+            } else {
+                console.log(yDiff);
+                if (Math.abs(yDiff) > 30) {
+                    if (yDiff < 0) {
+                        game.move(1);
+
+                    } else {
+                        game.move(3);
+
+                    }
+                }
+            }
+        });
     }
 
     window.onload = function () {

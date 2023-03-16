@@ -919,17 +919,51 @@
                 }
             };
 
-            let touchStatus = {};
+            const touchStatus = {};
+            const mouseStatus = {};
             window.addEventListener("touchstart", function (event) {
                 touchStatus.start = {};
                 touchStatus.start.x = event.touches[0].screenX;
                 touchStatus.start.y = event.touches[0].screenY;
             });
 
+            window.addEventListener("mousedown", function (event) {
+                mouseStatus.start = {};
+                mouseStatus.start.x = event.screenX;
+                mouseStatus.start.y = event.screenY;
+            });
+
             window.addEventListener("touchmove", function (event) {
                 event.preventDefault();
             }, { passive: false });
 
+            window.addEventListener("mouseup", function (event) {
+                let xDiff = event.screenX - mouseStatus.start.x;
+                let yDiff = event.screenY - mouseStatus.start.y;
+
+                if (Math.abs(xDiff) > Math.abs(yDiff)) {
+                    if (Math.abs(xDiff) > 30) {
+                        if (xDiff < 0) {
+                            game.move(2);
+
+                        } else {
+                            game.move(4);
+
+                        }
+                    }
+                } else {
+                    console.log(yDiff);
+                    if (Math.abs(yDiff) > 30) {
+                        if (yDiff < 0) {
+                            game.move(1);
+
+                        } else {
+                            game.move(3);
+
+                        }
+                    }
+                }
+            });
 
             window.addEventListener("touchend", function (event) {
                 let xDiff = event.changedTouches[0].screenX - touchStatus.start.x;
@@ -958,6 +992,7 @@
                     }
                 }
             });
+
             window.addEventListener("touchcancel", function (event) {
                 console.log(event.changedTouches);
             });
