@@ -1,5 +1,5 @@
 ## Demo
-https://childlike-south-stilton.glitch.me/
+https://soitchu.com/color-slide/
 
 ## Installation (server)
 
