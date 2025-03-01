@@ -1,758 +1,746 @@
 <html>
-<script type="text/javascript" src="https://cdn.socket.io/4.0.1/socket.io.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="index.css">
+  <script
+    type="text/javascript"
+    src="https://cdn.socket.io/4.0.1/socket.io.js"
+  ></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap"
+    rel="stylesheet"
+  />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="index.css" />
 
-<body>
-
+  <body>
     <div id="container">
-        <div class="overlay"></div>
-        <div id="queueMessage">Waiting in the queue...</div>
-        <div class="menu">
-            <div id="hostGame">
-                <div>
-                    Host a game! <br /><br />
-                    <button id="hostBut">Host</button>
-                </div>
-                <br /><br />
-                <div>
-                    Or join the queue <br /><br />
-                    <button id="queueBut">Queue</button>
-                </div>
-                <br /><br />
-                <div>
-                    Or Play Solo <br /><br />
-                    <button id="soloBut">Solo</button>
-                </div>
-            </div>
-            <div id="line"></div>
-
-            <div id="joinGame">
-                <div>
-                    Join a game using the room number! <br /><br />
-                    <input type="number" id="roomNumInput" min="100000" max="999999"><br /><br /><button
-                        id="joinBut">Join</button>
-                </div>
-            </div>
-
-
+      <div class="overlay"></div>
+      <div id="queueMessage">Waiting in the queue...</div>
+      <div class="menu">
+        <div id="hostGame">
+          <div>
+            Host a game! <br /><br />
+            <button id="hostBut">Host</button>
+          </div>
+          <br /><br />
+          <div>
+            Or join the queue <br /><br />
+            <button id="queueBut">Queue</button>
+          </div>
+          <br /><br />
+          <div>
+            Or Play Solo <br /><br />
+            <button id="soloBut">Solo</button>
+          </div>
         </div>
-        <div class="game_container" style="display: none;">
-            <button id="ready">Ready</button>
-            <button id="playAgain">Play Again</button>
-            <div id="messageDiv">Hello there</div>
-            <div id="roomNumDiv">#234567</div>
-            <div class="game_main"></div>
-            <div class="preview"></div>
-            <div class="game_main" id="secondGame"></div>
+        <div id="line"></div>
+
+        <div id="joinGame">
+          <div>
+            Join a game using the room number! <br /><br />
+            <input
+              type="number"
+              id="roomNumInput"
+              min="100000"
+              max="999999"
+            /><br /><br /><button id="joinBut">Join</button>
+          </div>
         </div>
+      </div>
+      <div class="game_container" style="display: none">
+        <button id="ready">Ready</button>
+        <button id="playAgain">Play Again</button>
+        <div id="messageDiv">Hello there</div>
+        <div id="roomNumDiv">#234567</div>
+        <div class="game_main"></div>
+        <div class="preview"></div>
+        <div class="game_main" id="secondGame"></div>
+      </div>
     </div>
+  </body>
 
-
-</body>
-
-
-
-
-
-<script type="text/javascript">
+  <script type="text/javascript">
     var webSocketUrl = "http://localhost:3005";
     function init() {
+      function ready() {
+        socket.emit("ready", "yes");
+      }
 
-        function ready() {
-            socket.emit('ready', 'yes');
+      function again() {
+        socket.emit("again", "yes");
+      }
+
+      function joinQueue() {
+        socket.emit("queue", "yes");
+      }
+
+      function goToSolo() {
+        window.location = "solo.html";
+      }
+      var count = 0;
+      var shouldISendData = false;
+      var localHistory = [];
+      var localHistoryTimeout = [];
+      var globalHistory = [];
+      var currentMoveCount = 0;
+      var socket = io(webSocketUrl);
+      var room_n;
+
+      function pickRoom() {
+        socket.emit("createroom", "join");
+      }
+
+      function openMenu() {
+        document.querySelector(".menu").style.display = "flex";
+        document.querySelector(".game_container").style.display = "none";
+      }
+      function closeMenu() {
+        document.querySelector(".menu").style.display = "flex";
+        document.querySelector(".game_container").style.display = "none";
+        document.getElementById("queueMessage").style.display = "none";
+      }
+
+      socket.on("disconnect", function () {
+        closeMenu();
+      });
+      function joinRoom() {
+        let tempRoom = document.getElementById("roomNumInput").value;
+
+        if (parseInt(tempRoom).toString().length == 6) {
+          changeRoom([0, tempRoom]);
+        } else {
+          alert(
+            "Not a valid room number. The room number must be between 100000 and 999999"
+          );
         }
+      }
+      function changeRoom(x) {
+        socket.emit("changeroom", JSON.stringify(x));
+      }
 
-        function again() {
-            socket.emit('again', 'yes');
+      setInterval(function () {
+        socket.emit("ping", "");
+      }, 1000);
+
+      socket.on("ping", function (data) {
+        if (data == "-1") {
+          openMenu();
         }
+      });
 
-        function joinQueue() {
-            socket.emit('queue', 'yes');
-        }
+      socket.on("message", function (data) {
+        alert(data);
+      });
 
-        function goToSolo() {
-            window.location = "solo.html";
-        }
-        var count = 0;
-        var shouldISendData = false;
-        var localHistory = [];
-        var localHistoryTimeout = [];
-        var globalHistory = [];
-        var currentMoveCount = 0;
-        var socket = io(webSocketUrl);
-        var room_n;
+      socket.on("queue", function (data) {
+        closeMenu();
+        document.getElementById("queueMessage").style.display = "block";
+      });
 
+      socket.on("messageLog", function (data) {
+        document.querySelector("#messageDiv").innerText = data;
+      });
 
-        function pickRoom() {
-            socket.emit("createroom", "join");
-        }
+      socket.on("show", function (data) {
+        document.getElementById("queueMessage").style.display = "none";
+        document.querySelector(".menu").style.display = "none";
+        document.querySelector(".game_container").style.display = "flex";
+      });
 
-        function openMenu() {
-            document.querySelector(".menu").style.display = "flex";
-            document.querySelector(".game_container").style.display = "none";
-        }
-        function closeMenu() {
-            document.querySelector(".menu").style.display = "flex";
-            document.querySelector(".game_container").style.display = "none";
-            document.getElementById("queueMessage").style.display = "none";
-        }
-
-        socket.on('disconnect', function () {
-            closeMenu();
-
-        });
-        function joinRoom() {
-            let tempRoom = document.getElementById("roomNumInput").value;
-
-            if (parseInt(tempRoom).toString().length == 6) {
-                changeRoom([0, tempRoom]);
-            } else {
-                alert("Not a valid room number. The room number must be between 100000 and 999999");
-            }
-        }
-        function changeRoom(x) {
-            socket.emit('changeroom', JSON.stringify(x));
-        }
-
-
-        setInterval(function () {
-            socket.emit('ping', "");
-        }, 1000);
-
-        socket.on('ping', function (data) {
-            if (data == "-1") {
-                openMenu();
-            }
-        });
-
-        socket.on('message', function (data) {
-            alert(data);
-        });
-
-        socket.on('queue', function (data) {
-            closeMenu();
-            document.getElementById("queueMessage").style.display = "block";
-
-        });
-
-        socket.on('messageLog', function (data) {
-            document.querySelector("#messageDiv").innerText = data;
-        });
-
-        socket.on('show', function (data) {
+      socket.on("room", function (data) {
+        try {
+          data = JSON.parse(data);
+          if (parseInt(data[0]) !== 1) {
             document.getElementById("queueMessage").style.display = "none";
             document.querySelector(".menu").style.display = "none";
             document.querySelector(".game_container").style.display = "flex";
-        });
+          }
 
+          room_n = data[1];
+          document.querySelector(
+            "#roomNumDiv"
+          ).innerText = `Room number : #${room_n}`;
 
+          document.querySelectorAll(".game_main")[0].innerHTML = "";
+          document.querySelectorAll(".game_main")[1].innerHTML = "";
+          document.querySelector(".preview").innerHTML = "";
+          document.querySelector("#playAgain").style.display = "none";
+        } catch (err) {
+          console.log(err);
+          alert("Unexpected Error.");
+        }
+      });
 
-        socket.on('room', function (data) {
-            try {
-                data = JSON.parse(data);
-                if (parseInt(data[0]) !== 1) {
-                    document.getElementById("queueMessage").style.display = "none";
-                    document.querySelector(".menu").style.display = "none";
-                    document.querySelector(".game_container").style.display = "flex";
-                }
+      socket.on("start", function () {
+        let countIn = 3;
+        document.querySelector("#playAgain").style.display = "none";
 
+        document.querySelector(
+          "#messageDiv"
+        ).innerText = `Starting in ${countIn} second(s)`;
 
-                room_n = data[1];
-                document.querySelector('#roomNumDiv').innerText = `Room number : #${room_n}`;
+        let thisInterval = setInterval(function () {
+          countIn--;
 
-                document.querySelectorAll(".game_main")[0].innerHTML = "";
-                document.querySelectorAll(".game_main")[1].innerHTML = "";
-                document.querySelector(".preview").innerHTML = "";
-                document.querySelector("#playAgain").style.display = 'none';
-            } catch (err) {
-                console.log(err);
-                alert("Unexpected Error.");
-            }
+          document.querySelector(
+            "#messageDiv"
+          ).innerText = `Starting in ${countIn} second(s)`;
+          if (countIn == 0) {
+            shouldISendData = true;
+            document.querySelector("#messageDiv").innerText = `START!`;
 
-        });
+            clearInterval(thisInterval);
+          }
+        }, 1000);
+      });
+      socket.on("again", function (data) {
+        shouldISendData = false;
 
-        socket.on('start', function () {
-            let countIn = 3;
-            document.querySelector("#playAgain").style.display = 'none';
+        if (parseInt(data) == 1) {
+          document.querySelector(
+            "#messageDiv"
+          ).innerText = `You won! Press ready again to play again.`;
+        } else {
+          document.querySelector(
+            "#messageDiv"
+          ).innerText = `You lost :( Press ready again to play again.`;
+        }
+      });
 
-            document.querySelector("#messageDiv").innerText = `Starting in ${countIn} second(s)`;
+      socket.on("joinThis", function (room) {
+        changeRoom([1, room]);
+      });
+      socket.on("move", function (data) {
+        if (!shouldISendData) {
+          return;
+        }
+        data = JSON.parse(data);
+        if (data.type == 1) {
+          localHistory.push(data.local);
+        } else {
+          game2.move(data.data, false);
+          currentMoveCount = data.count;
+        }
+        // console.log(data);
+      });
 
-            let thisInterval = setInterval(function () {
-                countIn--;
+      socket.on("changeConfig", function (data) {
+        data = JSON.parse(data);
+        Object.assign(game.game, JSON.parse(JSON.stringify(data.game)));
+        Object.assign(
+          game.currentHole,
+          JSON.parse(JSON.stringify(data.currentHole))
+        );
 
-                document.querySelector("#messageDiv").innerText = `Starting in ${countIn} second(s)`;
-                if (countIn == 0) {
-                    shouldISendData = true;
-                    document.querySelector("#messageDiv").innerText = `START!`;
+        Object.assign(game2.game, JSON.parse(JSON.stringify(data.game)));
+        Object.assign(
+          game2.currentHole,
+          JSON.parse(JSON.stringify(data.currentHole))
+        );
+        game.config.preview = JSON.parse(JSON.stringify(data.preview));
+        game2.config.preview = JSON.parse(JSON.stringify(data.preview));
+        game.initialise();
+        game2.initialise();
+      });
 
-                    clearInterval(thisInterval);
-                }
+      socket.on("reset", function (data) {
+        data = JSON.parse(data);
 
-            }, 1000);
-        });
-        socket.on('again', function (data) {
-            shouldISendData = false;
+        if (data.type == 1) {
+          shouldISendData = false;
 
-            if (parseInt(data) == 1) {
-                document.querySelector("#messageDiv").innerText = `You won! Press ready again to play again.`;
-
-            } else {
-                document.querySelector("#messageDiv").innerText = `You lost :( Press ready again to play again.`;
-
-            }
-        });
-
-        socket.on('joinThis', function (room) {
-            changeRoom([1, room]);
-        });
-        socket.on('move', function (data) {
-            if (!shouldISendData) {
-                return;
-            }
-            data = JSON.parse(data);
-            if (data.type == 1) {
-                localHistory.push(data.local);
-            } else {
-                game2.move(data.data, false);
-                currentMoveCount = data.count;
-            }
-            // console.log(data);
-        });
-
-        socket.on('changeConfig', function (data) {
-            data = JSON.parse(data);
-            Object.assign(game.game, JSON.parse(JSON.stringify(data.game)));
-            Object.assign(game.currentHole, JSON.parse(JSON.stringify(data.currentHole)));
-
-            Object.assign(game2.game, JSON.parse(JSON.stringify(data.game)));
-            Object.assign(game2.currentHole, JSON.parse(JSON.stringify(data.currentHole)));
-            game.config.preview = JSON.parse(JSON.stringify(data.preview));
-            game2.config.preview = JSON.parse(JSON.stringify(data.preview));
-            game.initialise();
+          game.game = JSON.parse(JSON.stringify(data.game));
+          game.currentHole = JSON.parse(JSON.stringify(data.gameCurrentHole));
+          game.initialise();
+          shouldISendData = true;
+        } else if (data.type == 2) {
+          if (JSON.stringify(data.game) != JSON.stringify(game2.game)) {
+            game2.game = JSON.parse(JSON.stringify(data.game));
+            game2.currentHole = JSON.parse(
+              JSON.stringify(data.gameCurrentHole)
+            );
             game2.initialise();
-        });
+          }
+        }
+      });
+      function sendData(x) {
+        if (!shouldISendData) {
+          return;
+        }
+        count++;
+        let c = count;
 
-        socket.on('reset', function (data) {
-            data = JSON.parse(data);
+        socket.emit("move", JSON.stringify([x, count, game.game, game2.game]));
+      }
 
-            if (data.type == 1) {
-                shouldISendData = false;
-
-                game.game = JSON.parse(JSON.stringify(data.game));
-                game.currentHole = JSON.parse(JSON.stringify(data.gameCurrentHole));
-                game.initialise();
-                shouldISendData = true;
-
-            } else if (data.type == 2) {
-
-                if (JSON.stringify(data.game) != JSON.stringify(game2.game)) {
-                    game2.game = JSON.parse(JSON.stringify(data.game));
-                    game2.currentHole = JSON.parse(JSON.stringify(data.gameCurrentHole));
-                    game2.initialise();
-                }
-
+      class gameClass {
+        constructor(gameDiv, config) {
+          this.config = config;
+          this.main = gameDiv;
+          this.tileCountTotal = this.config.n;
+          this.game = [];
+          this.colors = [
+            "#000000",
+            "#ffffff",
+            "#b83030",
+            "#0b1470",
+            "#b5c229",
+            "#b04272",
+          ];
+          this.canMove = false;
+          /// Setting up the initial game-array
+          for (var i = 0; i < this.tileCountTotal; i++) {
+            this.game.push([]);
+            for (var j = 0; j < this.tileCountTotal; j++) {
+              this.game[this.game.length - 1][j] =
+                i * this.tileCountTotal + j + 1;
             }
+          }
 
+          /// The hole's position is represented by a '0' and it's location is on the bottom-right
+          this.game[this.tileCountTotal - 1][this.tileCountTotal - 1] = 0;
+          this.currentHole = [this.tileCountTotal - 1, this.tileCountTotal - 1];
 
+          /// the object 'locations' remembers the location of each tile and transltes them
+          this.locations = {};
 
-
-
-
-        });
-        function sendData(x) {
-            if (!shouldISendData) {
-                return;
-            }
-            count++;
-            let c = count;
-
-            socket.emit("move", JSON.stringify([x, count, game.game, game2.game]));
+          var self = this;
         }
 
-
-        class gameClass {
-            constructor(gameDiv, config) {
-                this.config = config;
-                this.main = gameDiv;
-                this.tileCountTotal = this.config.n;
-                this.game = [];
-                this.colors = ["#000000", "#ffffff", "#b83030", "#0b1470", "#b5c229", "#b04272"];
-                this.canMove = false;
-                /// Setting up the initial game-array
-                for (var i = 0; i < this.tileCountTotal; i++) {
-                    this.game.push([]);
-                    for (var j = 0; j < this.tileCountTotal; j++) {
-                        this.game[this.game.length - 1][j] = i * this.tileCountTotal + j + 1;
-                    }
-                }
-
-                /// The hole's position is represented by a '0' and it's location is on the bottom-right
-                this.game[this.tileCountTotal - 1][this.tileCountTotal - 1] = 0;
-                this.currentHole = [this.tileCountTotal - 1, this.tileCountTotal - 1];
-
-                /// the object 'locations' remembers the location of each tile and transltes them
-                this.locations = {};
-
-                var self = this;
-
-            }
-
-            /*
+        /*
                 Creates the tiles and returns the DIV
             */
-            createTile(num) {
-
-
-                let tempTile = document.createElement("div");
-                if (num == 0) {
-                    tempTile.style.opacity = 0;
-                }
-                tempTile.className = "tile";
-
-                /// Applying the style according to the config file provided
-
-                tempTile.style.margin = `${this.config.margin}px`;
-                tempTile.style.height = `${this.config.size}px`;
-                tempTile.style.width = `${this.config.size}px`;
-                tempTile.style.border = `${this.config.border}px solid black`;
-
-                tempTile.id = this.config.name + num;
-                tempTile.style.backgroundColor = this.colors[(num) % 6];
-                return tempTile;
-            }
-
-            createPreviewTile(num) {
-
-
-                let tempTile = document.createElement("div");
-
-                tempTile.className = "previewTiles";
-
-                /// Applying the style according to the config file provided
-
-
-                tempTile.style.backgroundColor = this.colors[(num)];
-                return tempTile;
-            }
-
-            createTileShadow() {
-                let tempTile = document.createElement("div");
-                tempTile.className = "tileShadow";
-
-                /// Applying the style according to the config file provided
-
-                tempTile.style.margin = `${this.config.margin}px`;
-                tempTile.style.height = `${this.config.size}px`;
-                tempTile.style.width = `${this.config.size}px`;
-
-                return tempTile;
-            }
-
-            move(dir, wonAlert = true) {
-                let xOffset = 0, yOffset = 0;
-
-                /// dir 3 : top
-                /// dir 1 : bottom
-                /// dir 4 : left
-                /// dir 2 : right
-
-                if (dir == 3) {
-                    yOffset = -1;
-                } else if (dir == 1) {
-                    yOffset = 1;
-                } else if (dir == 4) {
-                    xOffset = -1;
-                } else if (dir == 2) {
-                    xOffset = 1;
-                }
-
-                /// We don't wanna move if the the hold is on the edge
-                if ((!this.canMove && wonAlert) || (!shouldISendData)) {
-                    return -2;
-                }
-                else if ((this.currentHole[0] + yOffset) >= (this.tileCountTotal) || (this.currentHole[1] + xOffset) >= (this.tileCountTotal) || (this.currentHole[1] + xOffset) < 0 || (this.currentHole[0] + yOffset) < 0) {
-                    return -1;
-                }
-
-
-
-                /// Getting the coordinates of the hole adjacent, which is determined by the variable 'dir'
-                let holeAbove = [this.currentHole[0] + yOffset, this.currentHole[1] + xOffset];
-
-                let holeAboveDOM = document.getElementById(`${this.config.name}${this.game[holeAbove[0]][holeAbove[1]]}`);
-                let holeDOM = document.getElementById(`${this.config.name}0`);
-
-                /// Getting the location so we can translate it
-                let thisLoc = this.locations[this.game[holeAbove[0]][holeAbove[1]]];
-                let thisHoleLoc = this.locations[this.game[this.currentHole[0]][this.currentHole[1]]];
-
-
-                if (yOffset != 0) {
-                    thisHoleLoc.y += (this.config.size + this.config.margin * 2 + 10) * yOffset;
-                    thisLoc.y += -(this.config.size + this.config.margin * 2 + 10) * yOffset;
-                } else if (xOffset != 0) {
-                    thisHoleLoc.x += (this.config.size + this.config.margin * 2) * xOffset;
-                    thisLoc.x += -(this.config.size + this.config.margin * 2) * xOffset;
-                }
-
-                /// Applying the translated positions
-                holeAboveDOM.style.transform = `translate(${thisLoc.x}px,${thisLoc.y}px)`;
-                holeDOM.style.transform = `translate(${thisHoleLoc.x}px,${thisHoleLoc.y}px)`;
-
-                /// Swapping the numbers in the main game array
-                let tempNum = this.game[holeAbove[0]][holeAbove[1]];
-                this.game[holeAbove[0]][holeAbove[1]] = this.game[this.currentHole[0]][this.currentHole[1]];
-                this.game[this.currentHole[0]][this.currentHole[1]] = tempNum;
-
-                /// Changing the hole's position to its current location
-                if (yOffset != 0) {
-                    this.currentHole[0] += yOffset;
-                } else if (xOffset != 0) {
-                    this.currentHole[1] += xOffset;
-                }
-
-
-                if (wonAlert) {
-                    sendData(dir);
-                }
-
-
-
-            }
-
-            reinitialise() {
-                this.canMove = false;
-                this.main.innerHTML = "";
-
-
-
-                let shadowContainer = document.createElement("div");
-                shadowContainer.className = "shadowCon";
-                this.main.append(shadowContainer);
-
-                let tilesContainer = document.createElement("div");
-                tilesContainer.className = "tilesCon";
-                this.main.append(tilesContainer);
-
-
-                for (var i = 0; i < this.tileCountTotal; i++) {
-                    let tempColumn = document.createElement("div");
-                    tempColumn.className = "game_column";
-                    for (var j = 0; j < this.tileCountTotal; j++) {
-                        tempColumn.append(this.createTile(this.game[i][j]));
-                    }
-                    tilesContainer.append(tempColumn);
-
-                    let tempColumnShadow = document.createElement("div");
-                    tempColumnShadow.className = "game_column";
-                    for (var j = 0; j < this.tileCountTotal; j++) {
-                        tempColumnShadow.append(this.createTileShadow());
-                    }
-                    shadowContainer.append(tempColumnShadow);
-                }
-
-
-                for (var i = 0; i < this.tileCountTotal * this.tileCountTotal; i++) {
-                    this.locations[i] = {
-                        x: 0,
-                        y: 0,
-                    };
-                }
-                this.canMove = true;
-
-            }
-            randomise() {
-                /// The initial state of the game is determined by moving the tiles from the 
-                /// original configuration; this will ensure that it is always possible for the user
-                /// to use legal moves to go back to the original configuration to win the game
-                var times = Math.floor(Math.random() * 20) + 200;
-                var last = 0;
-
-                /// As the hole is initially at the bottom left, the first moves should be top or left
-                var random = [1, 2, 3, 4];
-                for (var i = 0; i < times; i++) {
-                    /// Choosing a random move to make
-                    var last = (Math.floor(Math.random() * 100)) % (random.length);
-                    let moved = random[last];
-
-                    /// If the move made does not affect the configration of the game, then try again 
-                    /// so hopefully we don't get the same move again. 
-                    if (this.move(moved, false) == -1) {
-                        i--;
-                        continue;
-                    }
-
-                    /// The next random array should not undo what the last move did,
-                    /// so eliminating that possibility
-                    if (moved == 3 || moved == 1) {
-                        random = [4, 2, moved];
-                    } else if (moved == 2 || moved == 4) {
-                        random = [1, 3, moved];
-                    }
-
-                    /// If the hole is on the corner, don't make moves that would not change the conifguration at all
-                    if (this.currentHole[0] == 0 && this.currentHole[1] == 0) {
-                        random = [1, 2];
-                    } else if (this.currentHole[0] == 0 && this.currentHole[1] == (this.tileCountTotal - 1)) {
-                        random = [1, 4];
-                    } else if (this.currentHole[1] == 0 && this.currentHole[0] == (this.tileCountTotal - 1)) {
-                        random = [3, 2];
-                    } else if (this.currentHole[1] == (this.tileCountTotal - 1) && this.currentHole[0] == (this.tileCountTotal - 1)) {
-                        random = [3, 4];
-                    }
-
-                }
-
-                for (var i = 0; i < 5; i++) {
-                    this.move(2, false);
-                    this.move(1, false);
-
-                }
-
-            }
-            storeConfig() {
-                let temp = [];
-
-                for (var i = 1; i <= 3; i++) {
-                    temp.push([]);
-                    for (var j = 1; j <= 3; j++) {
-                        if (this.game[i][j] == 0) {
-                            temp[i - 1].push(-1);
-                        } else {
-                            temp[i - 1].push(this.game[i][j] % 6);
-                        }
-                    }
-                }
-                return temp;
-            }
-
-            compare(arr1, arr2) {
-                for (var i = 0; i < 3; i++) {
-                    for (var j = 0; j < 3; j++) {
-                        if (arr1[i][j] != arr2[i][j]) {
-                            return -1;
-                        }
-                    }
-                }
-
-                return 1;
-
-            }
-            initialise() {
-
-                /// Appending the tiles in the main div
-                this.canMove = false;
-
-                this.main.innerHTML = "";
-
-                let shadowContainer = document.createElement("div");
-                shadowContainer.className = "shadowCon";
-                shadowContainer.style.height = this.config.size * 3 + this.config.margin * 7 + 20 + "px";
-                shadowContainer.style.width = this.config.size * 3 + this.config.margin * 7 + "px";
-                this.main.append(shadowContainer);
-
-
-                let tilesContainer = document.createElement("div");
-                tilesContainer.className = "tilesCon";
-                this.main.append(tilesContainer);
-
-
-                for (var i = 0; i < this.tileCountTotal; i++) {
-                    let tempColumn = document.createElement("div");
-                    tempColumn.className = "game_column";
-                    for (var j = 0; j < this.tileCountTotal; j++) {
-                        tempColumn.append(this.createTile(this.game[i][j]));
-                    }
-                    tilesContainer.append(tempColumn);
-
-                    let tempColumnShadow = document.createElement("div");
-                    tempColumnShadow.className = "game_column";
-                    for (var j = 0; j < this.tileCountTotal; j++) {
-                        tempColumnShadow.append(this.createTileShadow());
-                    }
-                    shadowContainer.append(tempColumnShadow);
-                }
-
-
-                this.currentConfig = this.config.preview;
-
-
-                if (this.config.previewShow) {
-                    let previewCon = document.querySelector(".preview");
-                    previewCon.innerHTML = "";
-
-                    for (var i = 0; i < 3; i++) {
-                        let tempColumn = document.createElement("div");
-                        tempColumn.className = "game_column";
-                        for (var j = 0; j < 3; j++) {
-                            tempColumn.append(this.createPreviewTile(this.currentConfig[i][j]));
-                        }
-                        previewCon.append(tempColumn);
-                    }
-                }
-
-                for (var i = 0; i < this.tileCountTotal * this.tileCountTotal; i++) {
-                    this.locations[i] = {
-                        x: 0,
-                        y: 0,
-                    };
-                }
-                this.canMove = true;
-
-            }
-
-
-        };
-
-        var game;
-        var game2;
-
-        document.getElementById("hostBut").addEventListener("click", pickRoom);
-        document.getElementById("queueBut").addEventListener("click", joinQueue);
-        document.getElementById("soloBut").addEventListener("click", goToSolo);
-        document.getElementById("joinBut").addEventListener("click", joinRoom);
-        document.getElementById("ready").addEventListener("click", ready);
-        game_div = document.getElementsByClassName("game_main")[0];
-
-        game = new gameClass(game_div, {
-            "margin": 5,
-            "size": 40,
-            "border": 5,
-            "n": 5,
-            "name": "1tile",
-            "previewShow": true,
-        });
-
-
-        game2 = new gameClass(document.getElementsByClassName("game_main")[1], {
-            "margin": 5,
-            "size": 40,
-            "border": 5,
-            "n": 5,
-            "name": "2tile",
-            "previewShow": false,
-
-        });
-
-        if (window.innerWidth < 900) {
-            game.config.size = 35;
-            game.config.border = 3;
-            game2.config.border = 3;
-            game2.config.size = 35;
-
-            document.getElementsByClassName("game_main")[0].style.padding = "10px";
+        createTile(num) {
+          let tempTile = document.createElement("div");
+          if (num == 0) {
+            tempTile.style.opacity = 0;
+          }
+          tempTile.className = "tile";
+
+          /// Applying the style according to the config file provided
+
+          tempTile.style.margin = `${this.config.margin}px`;
+          tempTile.style.height = `${this.config.size}px`;
+          tempTile.style.width = `${this.config.size}px`;
+          tempTile.style.border = `${this.config.border}px solid black`;
+
+          tempTile.id = this.config.name + num;
+          tempTile.style.backgroundColor = this.colors[num % 6];
+          return tempTile;
         }
 
-        window.onkeydown = function (event) {
-            if (event.keyCode == 37) {
-                game.move(2);
+        createPreviewTile(num) {
+          let tempTile = document.createElement("div");
 
+          tempTile.className = "previewTiles";
+
+          /// Applying the style according to the config file provided
+
+          tempTile.style.backgroundColor = this.colors[num];
+          return tempTile;
+        }
+
+        createTileShadow() {
+          let tempTile = document.createElement("div");
+          tempTile.className = "tileShadow";
+
+          /// Applying the style according to the config file provided
+
+          tempTile.style.margin = `${this.config.margin}px`;
+          tempTile.style.height = `${this.config.size}px`;
+          tempTile.style.width = `${this.config.size}px`;
+
+          return tempTile;
+        }
+
+        move(dir, wonAlert = true) {
+          let xOffset = 0,
+            yOffset = 0;
+
+          /// dir 3 : top
+          /// dir 1 : bottom
+          /// dir 4 : left
+          /// dir 2 : right
+
+          if (dir == 3) {
+            yOffset = -1;
+          } else if (dir == 1) {
+            yOffset = 1;
+          } else if (dir == 4) {
+            xOffset = -1;
+          } else if (dir == 2) {
+            xOffset = 1;
+          }
+
+          /// We don't wanna move if the the hold is on the edge
+          if ((!this.canMove && wonAlert) || !shouldISendData) {
+            return -2;
+          } else if (
+            this.currentHole[0] + yOffset >= this.tileCountTotal ||
+            this.currentHole[1] + xOffset >= this.tileCountTotal ||
+            this.currentHole[1] + xOffset < 0 ||
+            this.currentHole[0] + yOffset < 0
+          ) {
+            return -1;
+          }
+
+          /// Getting the coordinates of the hole adjacent, which is determined by the variable 'dir'
+          let holeAbove = [
+            this.currentHole[0] + yOffset,
+            this.currentHole[1] + xOffset,
+          ];
+
+          let holeAboveDOM = document.getElementById(
+            `${this.config.name}${this.game[holeAbove[0]][holeAbove[1]]}`
+          );
+          let holeDOM = document.getElementById(`${this.config.name}0`);
+
+          /// Getting the location so we can translate it
+          let thisLoc = this.locations[this.game[holeAbove[0]][holeAbove[1]]];
+          let thisHoleLoc =
+            this.locations[this.game[this.currentHole[0]][this.currentHole[1]]];
+
+          if (yOffset != 0) {
+            thisHoleLoc.y +=
+              (this.config.size + this.config.margin * 2 + 10) * yOffset;
+            thisLoc.y +=
+              -(this.config.size + this.config.margin * 2 + 10) * yOffset;
+          } else if (xOffset != 0) {
+            thisHoleLoc.x +=
+              (this.config.size + this.config.margin * 2) * xOffset;
+            thisLoc.x += -(this.config.size + this.config.margin * 2) * xOffset;
+          }
+
+          /// Applying the translated positions
+          holeAboveDOM.style.transform = `translate(${thisLoc.x}px,${thisLoc.y}px)`;
+          holeDOM.style.transform = `translate(${thisHoleLoc.x}px,${thisHoleLoc.y}px)`;
+
+          /// Swapping the numbers in the main game array
+          let tempNum = this.game[holeAbove[0]][holeAbove[1]];
+          this.game[holeAbove[0]][holeAbove[1]] =
+            this.game[this.currentHole[0]][this.currentHole[1]];
+          this.game[this.currentHole[0]][this.currentHole[1]] = tempNum;
+
+          /// Changing the hole's position to its current location
+          if (yOffset != 0) {
+            this.currentHole[0] += yOffset;
+          } else if (xOffset != 0) {
+            this.currentHole[1] += xOffset;
+          }
+
+          if (wonAlert) {
+            sendData(dir);
+          }
+        }
+
+        reinitialise() {
+          this.canMove = false;
+          this.main.innerHTML = "";
+
+          let shadowContainer = document.createElement("div");
+          shadowContainer.className = "shadowCon";
+          this.main.append(shadowContainer);
+
+          let tilesContainer = document.createElement("div");
+          tilesContainer.className = "tilesCon";
+          this.main.append(tilesContainer);
+
+          for (var i = 0; i < this.tileCountTotal; i++) {
+            let tempColumn = document.createElement("div");
+            tempColumn.className = "game_column";
+            for (var j = 0; j < this.tileCountTotal; j++) {
+              tempColumn.append(this.createTile(this.game[i][j]));
+            }
+            tilesContainer.append(tempColumn);
+
+            let tempColumnShadow = document.createElement("div");
+            tempColumnShadow.className = "game_column";
+            for (var j = 0; j < this.tileCountTotal; j++) {
+              tempColumnShadow.append(this.createTileShadow());
+            }
+            shadowContainer.append(tempColumnShadow);
+          }
+
+          for (var i = 0; i < this.tileCountTotal * this.tileCountTotal; i++) {
+            this.locations[i] = {
+              x: 0,
+              y: 0,
+            };
+          }
+          this.canMove = true;
+        }
+        randomise() {
+          /// The initial state of the game is determined by moving the tiles from the
+          /// original configuration; this will ensure that it is always possible for the user
+          /// to use legal moves to go back to the original configuration to win the game
+          var times = Math.floor(Math.random() * 20) + 200;
+          var last = 0;
+
+          /// As the hole is initially at the bottom left, the first moves should be top or left
+          var random = [1, 2, 3, 4];
+          for (var i = 0; i < times; i++) {
+            /// Choosing a random move to make
+            var last = Math.floor(Math.random() * 100) % random.length;
+            let moved = random[last];
+
+            /// If the move made does not affect the configration of the game, then try again
+            /// so hopefully we don't get the same move again.
+            if (this.move(moved, false) == -1) {
+              i--;
+              continue;
             }
 
-            if (event.keyCode == 38) {
-                game.move(1);
-
+            /// The next random array should not undo what the last move did,
+            /// so eliminating that possibility
+            if (moved == 3 || moved == 1) {
+              random = [4, 2, moved];
+            } else if (moved == 2 || moved == 4) {
+              random = [1, 3, moved];
             }
 
-            if (event.keyCode == 39) {
-                game.move(4);
-
+            /// If the hole is on the corner, don't make moves that would not change the conifguration at all
+            if (this.currentHole[0] == 0 && this.currentHole[1] == 0) {
+              random = [1, 2];
+            } else if (
+              this.currentHole[0] == 0 &&
+              this.currentHole[1] == this.tileCountTotal - 1
+            ) {
+              random = [1, 4];
+            } else if (
+              this.currentHole[1] == 0 &&
+              this.currentHole[0] == this.tileCountTotal - 1
+            ) {
+              random = [3, 2];
+            } else if (
+              this.currentHole[1] == this.tileCountTotal - 1 &&
+              this.currentHole[0] == this.tileCountTotal - 1
+            ) {
+              random = [3, 4];
             }
+          }
 
-            if (event.keyCode == 40) {
-                game.move(3);
+          for (var i = 0; i < 5; i++) {
+            this.move(2, false);
+            this.move(1, false);
+          }
+        }
+        storeConfig() {
+          let temp = [];
 
+          for (var i = 1; i <= 3; i++) {
+            temp.push([]);
+            for (var j = 1; j <= 3; j++) {
+              if (this.game[i][j] == 0) {
+                temp[i - 1].push(-1);
+              } else {
+                temp[i - 1].push(this.game[i][j] % 6);
+              }
             }
-        };
+          }
+          return temp;
+        }
 
-        let touchStatus = {};
-        window.addEventListener("touchstart", function (event) {
-            touchStatus.start = {};
-            touchStatus.start.x = event.touches[0].screenX;
-            touchStatus.start.y = event.touches[0].screenY;
-        });
+        compare(arr1, arr2) {
+          for (var i = 0; i < 3; i++) {
+            for (var j = 0; j < 3; j++) {
+              if (arr1[i][j] != arr2[i][j]) {
+                return -1;
+              }
+            }
+          }
 
-        window.addEventListener("touchmove", function (event) {
-            event.preventDefault();
-        }, { passive: false });
+          return 1;
+        }
+        initialise() {
+          /// Appending the tiles in the main div
+          this.canMove = false;
 
+          this.main.innerHTML = "";
 
-        window.addEventListener("touchend", function (event) {
-            let xDiff = event.changedTouches[0].screenX - touchStatus.start.x;
-            let yDiff = event.changedTouches[0].screenY - touchStatus.start.y;
+          let shadowContainer = document.createElement("div");
+          shadowContainer.className = "shadowCon";
+          shadowContainer.style.height =
+            this.config.size * 3 + this.config.margin * 7 + 20 + "px";
+          shadowContainer.style.width =
+            this.config.size * 3 + this.config.margin * 7 + "px";
+          this.main.append(shadowContainer);
 
-            if (Math.abs(xDiff) > Math.abs(yDiff)) {
-                if (Math.abs(xDiff) > 30) {
-                    if (xDiff < 0) {
-                        game.move(2);
+          let tilesContainer = document.createElement("div");
+          tilesContainer.className = "tilesCon";
+          this.main.append(tilesContainer);
 
+          for (var i = 0; i < this.tileCountTotal; i++) {
+            let tempColumn = document.createElement("div");
+            tempColumn.className = "game_column";
+            for (var j = 0; j < this.tileCountTotal; j++) {
+              tempColumn.append(this.createTile(this.game[i][j]));
+            }
+            tilesContainer.append(tempColumn);
 
-                    } else {
-                        game.move(4);
+            let tempColumnShadow = document.createElement("div");
+            tempColumnShadow.className = "game_column";
+            for (var j = 0; j < this.tileCountTotal; j++) {
+              tempColumnShadow.append(this.createTileShadow());
+            }
+            shadowContainer.append(tempColumnShadow);
+          }
 
+          this.currentConfig = this.config.preview;
 
-                    }
-                }
+          if (this.config.previewShow) {
+            let previewCon = document.querySelector(".preview");
+            previewCon.innerHTML = "";
+
+            for (var i = 0; i < 3; i++) {
+              let tempColumn = document.createElement("div");
+              tempColumn.className = "game_column";
+              for (var j = 0; j < 3; j++) {
+                tempColumn.append(
+                  this.createPreviewTile(this.currentConfig[i][j])
+                );
+              }
+              previewCon.append(tempColumn);
+            }
+          }
+
+          for (var i = 0; i < this.tileCountTotal * this.tileCountTotal; i++) {
+            this.locations[i] = {
+              x: 0,
+              y: 0,
+            };
+          }
+          this.canMove = true;
+        }
+      }
+
+      var game;
+      var game2;
+
+      document.getElementById("hostBut").addEventListener("click", pickRoom);
+      document.getElementById("queueBut").addEventListener("click", joinQueue);
+      document.getElementById("soloBut").addEventListener("click", goToSolo);
+      document.getElementById("joinBut").addEventListener("click", joinRoom);
+      document.getElementById("ready").addEventListener("click", ready);
+      game_div = document.getElementsByClassName("game_main")[0];
+
+      game = new gameClass(game_div, {
+        margin: 5,
+        size: 40,
+        border: 5,
+        n: 5,
+        name: "1tile",
+        previewShow: true,
+      });
+
+      game2 = new gameClass(document.getElementsByClassName("game_main")[1], {
+        margin: 5,
+        size: 40,
+        border: 5,
+        n: 5,
+        name: "2tile",
+        previewShow: false,
+      });
+
+      if (window.innerWidth < 900) {
+        game.config.size = 35;
+        game.config.border = 3;
+        game2.config.border = 3;
+        game2.config.size = 35;
+
+        document.getElementsByClassName("game_main")[0].style.padding = "10px";
+      }
+
+      window.onkeydown = function (event) {
+        if (event.keyCode == 37) {
+          game.move(2);
+        }
+
+        if (event.keyCode == 38) {
+          game.move(1);
+        }
+
+        if (event.keyCode == 39) {
+          game.move(4);
+        }
+
+        if (event.keyCode == 40) {
+          game.move(3);
+        }
+      };
+
+      let touchStatus = {};
+      window.addEventListener("touchstart", function (event) {
+        touchStatus.start = {};
+        touchStatus.start.x = event.touches[0].screenX;
+        touchStatus.start.y = event.touches[0].screenY;
+      });
+
+      window.addEventListener(
+        "touchmove",
+        function (event) {
+          event.preventDefault();
+        },
+        { passive: false }
+      );
+
+      window.addEventListener("touchend", function (event) {
+        let xDiff = event.changedTouches[0].screenX - touchStatus.start.x;
+        let yDiff = event.changedTouches[0].screenY - touchStatus.start.y;
+
+        if (Math.abs(xDiff) > Math.abs(yDiff)) {
+          if (Math.abs(xDiff) > 30) {
+            if (xDiff < 0) {
+              game.move(2);
             } else {
-                if (Math.abs(yDiff) > 30) {
-                    if (yDiff < 0) {
-                        game.move(1);
-
-
-                    } else {
-                        game.move(3);
-
-
-                    }
-                }
+              game.move(4);
             }
-        });
-
-
-        const mouseStatus = {};
-
-        window.addEventListener("mousedown", function (event) {
-            mouseStatus.start = {};
-            mouseStatus.start.x = event.screenX;
-            mouseStatus.start.y = event.screenY;
-        });
-
-        window.addEventListener("mouseup", function (event) {
-            let xDiff = event.screenX - mouseStatus.start.x;
-            let yDiff = event.screenY - mouseStatus.start.y;
-
-            if (Math.abs(xDiff) > Math.abs(yDiff)) {
-                if (Math.abs(xDiff) > 30) {
-                    if (xDiff < 0) {
-                        game.move(2);
-
-                    } else {
-                        game.move(4);
-
-                    }
-                }
+          }
+        } else {
+          if (Math.abs(yDiff) > 30) {
+            if (yDiff < 0) {
+              game.move(1);
             } else {
-                console.log(yDiff);
-                if (Math.abs(yDiff) > 30) {
-                    if (yDiff < 0) {
-                        game.move(1);
-
-                    } else {
-                        game.move(3);
-
-                    }
-                }
+              game.move(3);
             }
-        });
+          }
+        }
+      });
+
+      const mouseStatus = {};
+
+      window.addEventListener("mousedown", function (event) {
+        mouseStatus.start = {};
+        mouseStatus.start.x = event.screenX;
+        mouseStatus.start.y = event.screenY;
+      });
+
+      window.addEventListener("mouseup", function (event) {
+        let xDiff = event.screenX - mouseStatus.start.x;
+        let yDiff = event.screenY - mouseStatus.start.y;
+
+        if (Math.abs(xDiff) > Math.abs(yDiff)) {
+          if (Math.abs(xDiff) > 30) {
+            if (xDiff < 0) {
+              game.move(2);
+            } else {
+              game.move(4);
+            }
+          }
+        } else {
+          console.log(yDiff);
+          if (Math.abs(yDiff) > 30) {
+            if (yDiff < 0) {
+              game.move(1);
+            } else {
+              game.move(3);
+            }
+          }
+        }
+      });
     }
 
     window.onload = function () {
-        init();
-    }
-</script>
-
+      init();
+    };
+  </script>
 </html>

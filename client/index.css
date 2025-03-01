@@ -1,303 +1,293 @@
-#container{
-    background-color: #000000;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 800 800'%3E%3Cg %3E%3Ccircle fill='%23000000' cx='400' cy='400' r='600'/%3E%3Ccircle fill='%23230046' cx='400' cy='400' r='500'/%3E%3Ccircle fill='%232f0052' cx='400' cy='400' r='400'/%3E%3Ccircle fill='%233b075e' cx='400' cy='400' r='300'/%3E%3Ccircle fill='%2348156a' cx='400' cy='400' r='200'/%3E%3Ccircle fill='%23552277' cx='400' cy='400' r='100'/%3E%3C/g%3E%3C/svg%3E");
-    background-attachment: fixed;
-    background-position: center;    
-    background-size: cover;
-    overflow: hidden;
-    height: 100%;
-    width: 100%;
-    position: absolute;
-    left: 0;
-    top: 0;
+#container {
+  background-color: #000000;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25' viewBox='0 0 800 800'%3E%3Cg %3E%3Ccircle fill='%23000000' cx='400' cy='400' r='600'/%3E%3Ccircle fill='%23230046' cx='400' cy='400' r='500'/%3E%3Ccircle fill='%232f0052' cx='400' cy='400' r='400'/%3E%3Ccircle fill='%233b075e' cx='400' cy='400' r='300'/%3E%3Ccircle fill='%2348156a' cx='400' cy='400' r='200'/%3E%3Ccircle fill='%23552277' cx='400' cy='400' r='100'/%3E%3C/g%3E%3C/svg%3E");
+  background-attachment: fixed;
+  background-position: center;
+  background-size: cover;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
 }
 
-.game_container{
-    height: 100%;
-    width: 100%;
-    position: absolute;
-    left: 0;
-    top: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: row;
+.game_container {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
 }
 
-.game_main{
-    background-color: rgb(255, 255, 255);
-    border-radius: 10px;
-    padding: 20px;
+.game_main {
+  background-color: rgb(255, 255, 255);
+  border-radius: 10px;
+  padding: 20px;
 
-    position: relative;
-
+  position: relative;
 }
-.game_column{
-    border-radius: 10px;
-    display: flex;
-    flex-direction: row;
-    padding: 5px 10px 5px 10px;
-
+.game_column {
+  border-radius: 10px;
+  display: flex;
+  flex-direction: row;
+  padding: 5px 10px 5px 10px;
 }
 /* .tileShadow{ */
-    /* background-color: #5ae1ff; */
+/* background-color: #5ae1ff; */
 /* } */
-.tile{
-    border: 4px solid black;
-    box-sizing: border-box;
-    height: 50px;
-    width:50px;
-    background-color: rgb(38,39,122);
-    border-radius: 10px;
-    color: white;
-    display: inline-block;
-    margin:5px;
-    font-family: 'Montserrat', sans-serif;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition-duration: 0.14s;
-    font-size: 20px;
-    user-select: none;
+.tile {
+  border: 4px solid black;
+  box-sizing: border-box;
+  height: 50px;
+  width: 50px;
+  background-color: rgb(38, 39, 122);
+  border-radius: 10px;
+  color: white;
+  display: inline-block;
+  margin: 5px;
+  font-family: "Montserrat", sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition-duration: 0.14s;
+  font-size: 20px;
+  user-select: none;
 }
 
-.tileShadow{
-    height: 50px;
-    width:50px;
-    background-color: rgba(253, 253, 253,0);
-    border-radius: 10px;
-    color: white;
-    display: inline-block;
-    margin:5px;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 20px;
+.tileShadow {
+  height: 50px;
+  width: 50px;
+  background-color: rgba(253, 253, 253, 0);
+  border-radius: 10px;
+  color: white;
+  display: inline-block;
+  margin: 5px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 20px;
 }
 
-.shadowCon{
-    position: absolute;
+.shadowCon {
+  position: absolute;
 
-    z-index: 1;
-    background: #dfc8c8;
-    width: calc(40% + 10px);
-    height: calc(40% + 20px);
-    border-radius: 10px;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%,-50%);
-    z-index: 1;
-}  
-
-.tilesCon{
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    z-index: 2;
+  z-index: 1;
+  background: #dfc8c8;
+  width: calc(40% + 10px);
+  height: calc(40% + 20px);
+  border-radius: 10px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
 }
 
-.preview{
-
-    height: 140px;
-    width: 130px;
-    border-radius: 10px;
-    background: #000000;
-    margin: 20px;
-    padding: 10px;
-
-}
-.overlay{
-    position: absolute;
-    top:0;
-    left:0;
-    height: 100%;
-    width:100%;
-    background-color: rgba(0,0,0,0.27);
-}
-.previewTiles{
-    height: 30px;
-    width: 30px;
-    margin: 3.333px;
-    border: 2px solid white;
-    border-radius: 10px;
-    box-sizing: border-box;
+.tilesCon {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 2;
 }
 
-#secondGame{
-    display: block;
-
+.preview {
+  height: 140px;
+  width: 130px;
+  border-radius: 10px;
+  background: #000000;
+  margin: 20px;
+  padding: 10px;
+}
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.27);
+}
+.previewTiles {
+  height: 30px;
+  width: 30px;
+  margin: 3.333px;
+  border: 2px solid white;
+  border-radius: 10px;
+  box-sizing: border-box;
 }
 
-.menu{
-    height: 100%;
-    width: 100%;
-    position: absolute;
-    top: 0;
-    overflow-y: auto;
-    left: 0;
-    justify-content: center;
-    align-items: center;
-    display: flex;
-    flex-direction: row;
+#secondGame {
+  display: block;
 }
 
-#hostGame{
-    height: 100%;
-    width: 50%;
-
-    justify-content: center;
-    align-items: center;
-    display: flex;
-    flex-direction: column;
-font-family:'Montserrat',sans-serif;
-    text-align: center;
-    color:white;
-
-}
-#line{
-    height:30%;
-    width:1px;
-    background-color: white;
-}
-#joinGame{
-    height: 100%;
-    width: 50%;
-
-    justify-content: center;
-    align-items: center;
-    display: flex;
-    flex-direction: column;
-font-family:'Montserrat',sans-serif;
-    text-align: center;
-    color:white;
+.menu {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  overflow-y: auto;
+  left: 0;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  flex-direction: row;
 }
 
-button{
-display:inline-block;
-padding:0.7em 1.4em;
-margin:0 0.3em 0.3em 0;
-border-radius:0.15em;
-border: 0;
-box-sizing: border-box;
-text-decoration:none;
-font-family:'Montserrat',sans-serif;
-font-weight:400;
-color:#FFFFFF;
-background-color:#b42e6e;
-box-shadow:inset 0 -0.6em 0 -0.35em rgba(0,0,0,0.17);
-text-align:center;
-position:relative;
+#hostGame {
+  height: 100%;
+  width: 50%;
+
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  font-family: "Montserrat", sans-serif;
+  text-align: center;
+  color: white;
+}
+#line {
+  height: 30%;
+  width: 1px;
+  background-color: white;
+}
+#joinGame {
+  height: 100%;
+  width: 50%;
+
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  font-family: "Montserrat", sans-serif;
+  text-align: center;
+  color: white;
 }
 
-button:active{
-box-shadow:inset 0 -0.6em 0 -0.35em rgba(0,0,0,0);
-
+button {
+  display: inline-block;
+  padding: 0.7em 1.4em;
+  margin: 0 0.3em 0.3em 0;
+  border-radius: 0.15em;
+  border: 0;
+  box-sizing: border-box;
+  text-decoration: none;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 400;
+  color: #ffffff;
+  background-color: #b42e6e;
+  box-shadow: inset 0 -0.6em 0 -0.35em rgba(0, 0, 0, 0.17);
+  text-align: center;
+  position: relative;
 }
 
-#roomNumInput{
-    
-    height: 35px;
-    padding: 10px;
-    width: 170px    ;
-    margin: 10px;
-    outline: none;
-    border-radius: 10px;
-    font-family: 'Montserrat', sans-serif;
-    border: 0;
-
-}
-#roomNumDiv{
-    position: absolute;
-    top:10px;
-    right:0px;
-    padding: 10px;
-    background-color: white;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 15px;
-    color:black;
-    border-radius: 10px 0px 0px 10px;
+button:active {
+  box-shadow: inset 0 -0.6em 0 -0.35em rgba(0, 0, 0, 0);
 }
 
-#messageDiv{
-    position: absolute;
-    top:60px;
-    bottom: auto;
-    right:0px;
-    max-width: 200px;
-    padding: 10px;
-    background-color: white;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 15px;
-    color:black;
-    border-radius: 10px 0px 0px 10px;
+#roomNumInput {
+  height: 35px;
+  padding: 10px;
+  width: 170px;
+  margin: 10px;
+  outline: none;
+  border-radius: 10px;
+  font-family: "Montserrat", sans-serif;
+  border: 0;
 }
-#ready{
-    position:absolute;
-    margin: 10px;
-    top:0;left:0;
-}
-
-
-#playAgain{
-    position:absolute;
-    margin: 10px;
-    top:50px;bottom:auto;left:0;display: none;
+#roomNumDiv {
+  position: absolute;
+  top: 10px;
+  right: 0px;
+  padding: 10px;
+  background-color: white;
+  font-family: "Montserrat", sans-serif;
+  font-size: 15px;
+  color: black;
+  border-radius: 10px 0px 0px 10px;
 }
 
-#queueMessage{
-    display: none;
-    max-width: 100%;
-    box-sizing: border-box;
-    padding: 10px;
-    position:absolute;
-    top: 0;
-    z-index: 2;
-    background-color: white;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size:15px;
-    font-family: 'Montserrat', sans-serif;
-    border-radius: 10px;
+#messageDiv {
+  position: absolute;
+  top: 60px;
+  bottom: auto;
+  right: 0px;
+  max-width: 200px;
+  padding: 10px;
+  background-color: white;
+  font-family: "Montserrat", sans-serif;
+  font-size: 15px;
+  color: black;
+  border-radius: 10px 0px 0px 10px;
+}
+#ready {
+  position: absolute;
+  margin: 10px;
+  top: 0;
+  left: 0;
+}
+
+#playAgain {
+  position: absolute;
+  margin: 10px;
+  top: 50px;
+  bottom: auto;
+  left: 0;
+  display: none;
+}
+
+#queueMessage {
+  display: none;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  position: absolute;
+  top: 0;
+  z-index: 2;
+  background-color: white;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 15px;
+  font-family: "Montserrat", sans-serif;
+  border-radius: 10px;
 }
 
 @media only screen and (max-width: 900px) {
-    .game_container {
-      flex-direction: column;
-    }
-    #secondGame{
-        display: none;
-    }
-
-    #hostGame{
-        width:100%;
-        height: auto;
-        min-height: 250px;
-    }
-
-    #joinGame{
-        width: 100%;
-        height: auto;
-        min-height: 250px;
-
-
-    }
-    .menu{
-        flex-wrap: wrap;
-    }
-
-    #line{
-        height:1px;
-        width:30%;
-        background-color: white;
-    }
-    #messageDiv{
-        bottom:10px;
-
-        top: auto;
-
-    }
-
-    #playAgain{
-        bottom:10px;top:auto;
-
-    }
-   
+  .game_container {
+    flex-direction: column;
   }
+  #secondGame {
+    display: none;
+  }
+
+  #hostGame {
+    width: 100%;
+    height: auto;
+    min-height: 250px;
+  }
+
+  #joinGame {
+    width: 100%;
+    height: auto;
+    min-height: 250px;
+  }
+  .menu {
+    flex-wrap: wrap;
+  }
+
+  #line {
+    height: 1px;
+    width: 30%;
+    background-color: white;
+  }
+  #messageDiv {
+    bottom: 10px;
+
+    top: auto;
+  }
+
+  #playAgain {
+    bottom: 10px;
+    top: auto;
+  }
+}
