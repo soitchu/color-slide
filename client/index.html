@@ -61,7 +61,7 @@
 
   <script type="text/javascript">
     var webSocketUrl = "http://localhost:3005";
-    function init() {
+    function init(socket) {
       function ready() {
         socket.emit("ready", "yes");
       }
@@ -83,7 +83,6 @@
       var localHistoryTimeout = [];
       var globalHistory = [];
       var currentMoveCount = 0;
-      var socket = io(webSocketUrl);
       var room_n;
 
       function pickRoom() {
@@ -560,9 +559,9 @@
           let shadowContainer = document.createElement("div");
           shadowContainer.className = "shadowCon";
           shadowContainer.style.height =
-            this.config.size * 3 + this.config.margin * 7 + 20 + "px";
+            this.config.size * (this.tileCountTotal - 2) + this.config.margin * (this.tileCountTotal - 2) * 2 + 40 + "px";
           shadowContainer.style.width =
-            this.config.size * 3 + this.config.margin * 7 + "px";
+            this.config.size * (this.tileCountTotal - 2) + this.config.margin * (this.tileCountTotal - 2) * 2  + "px";
           this.main.append(shadowContainer);
 
           let tilesContainer = document.createElement("div");
@@ -588,13 +587,14 @@
           this.currentConfig = this.config.preview;
 
           if (this.config.previewShow) {
+            console.log(this.currentConfig);
             let previewCon = document.querySelector(".preview");
             previewCon.innerHTML = "";
 
-            for (var i = 0; i < 3; i++) {
+            for (var i = 0; i < this.tileCountTotal - 2; i++) {
               let tempColumn = document.createElement("div");
               tempColumn.className = "game_column";
-              for (var j = 0; j < 3; j++) {
+              for (var j = 0; j < this.tileCountTotal - 2; j++) {
                 tempColumn.append(
                   this.createPreviewTile(this.currentConfig[i][j])
                 );
@@ -740,7 +740,10 @@
     }
 
     window.onload = function () {
-      init();
+      var socket = io(webSocketUrl);
+      socket.on("connect", function () {
+        init(socket);
+      });
     };
   </script>
 </html>

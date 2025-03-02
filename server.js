@@ -9,9 +9,10 @@ const config = require("./config.json");
 console.log(config);
 
 const queue = new LinkedList();
+const SIZE = 5;
 
 class gameClass {
-  constructor(config = 5) {
+  constructor(config = 7) {
     this.tileCountTotal = config;
     this.game = [];
     this.colors = [
@@ -136,7 +137,7 @@ class gameClass {
       }
     }
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < this.tileCountTotal; i++) {
       this.move(2);
       this.move(1);
     }
@@ -144,10 +145,12 @@ class gameClass {
 
   storeConfig() {
     const temp = [];
+    const start = 1;
+    const end = this.tileCountTotal - 2;
 
-    for (let i = 1; i <= 3; i++) {
+    for (let i = start; i <= end; i++) {
       temp.push([]);
-      for (let j = 1; j <= 3; j++) {
+      for (let j = start; j <= end; j++) {
         if (this.game[i][j] === 0) {
           temp[i - 1].push(-1);
         } else {
@@ -159,8 +162,9 @@ class gameClass {
   }
 
   compare(arr1, arr2) {
-    for (let i = 0; i < 3; i++) {
-      for (let j = 0; j < 3; j++) {
+    const solutionSize = this.tileCountTotal - 2;
+    for (let i = 0; i < solutionSize; i++) {
+      for (let j = 0; j < solutionSize; j++) {
         if (arr1[i][j] !== arr2[i][j]) {
           return -1;
         }
@@ -399,7 +403,7 @@ function onConnection(socket) {
           thisRoom = data_m[room_name];
           thisRoom.history = {};
           thisRoom.count = 0;
-          thisRoom.game = new gameClass(5);
+          thisRoom.game = new gameClass(SIZE);
           thisRoom.game.initialise();
           thisRoom.preview = thisRoom.game.storeConfig();
           thisRoom.inProgress = false;
@@ -475,7 +479,7 @@ function onConnection(socket) {
 
       const otherId = members[0] === socket.id ? members[1] : members[0];
 
-      if (compareArray(data[2], thisRoom[socket.id].game.game, 5, 5) === -1) {
+      if (compareArray(data[2], thisRoom[socket.id].game.game, SIZE, SIZE) === -1) {
         socket.emit(
           "reset",
           JSON.stringify({
@@ -485,7 +489,7 @@ function onConnection(socket) {
           })
         );
       } else if (
-        compareArray(data[3], thisRoom[otherId].game.game, 5, 5) === -1
+        compareArray(data[3], thisRoom[otherId].game.game, SIZE, SIZE) === -1
       ) {
         socket.emit(
           "reset",
@@ -522,14 +526,14 @@ function onConnection(socket) {
           io.in(room_name).emit("start", 1);
           thisRoom.readyOnce = true;
 
-          thisRoom.game = new gameClass(5);
+          thisRoom.game = new gameClass(SIZE);
           thisRoom.game.initialise();
           thisRoom.preview = thisRoom.game.storeConfig();
           thisRoom.inProgress = false;
 
           thisRoom[members[0]] = {};
           thisPlayer = thisRoom[members[0]];
-          thisPlayer.game = new gameClass(5);
+          thisPlayer.game = new gameClass(SIZE);
           thisPlayer.game.game = cloneArray(data_m[room_name].game.game);
           thisPlayer.game.currentHole = cloneArray(
             data_m[room_name].game.currentHole
@@ -537,7 +541,7 @@ function onConnection(socket) {
 
           thisRoom[members[1]] = {};
           otherPlayer = thisRoom[members[1]];
-          otherPlayer.game = new gameClass(5);
+          otherPlayer.game = new gameClass(SIZE);
           otherPlayer.game.game = cloneArray(data_m[room_name].game.game);
           otherPlayer.game.currentHole = cloneArray(
             data_m[room_name].game.currentHole
